@@ -5,11 +5,11 @@ const getSuivi = async (req, res) => {
     try {
         const filePath = getTSVFilePath('suivi');
         const suivis = parseTSV(filePath);
-        
+
         // Join with client names
         const clientPath = getTSVFilePath('clients');
         const clients = parseTSV(clientPath);
-        
+
         const enrichedSuivis = suivis.map(s => {
             const client = clients.find(c => c.id === s.id_client);
             return {
@@ -17,7 +17,7 @@ const getSuivi = async (req, res) => {
                 client_name: client ? `${client.prenom} ${client.nom}` : s.id_client
             };
         });
-        
+
         res.status(200).json(enrichedSuivis);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving suivi', error });
@@ -31,7 +31,7 @@ const getSuiviById = async (req, res) => {
         const filePath = getTSVFilePath('suivi');
         const suivis = parseTSV(filePath);
         const suivi = suivis.find(s => s.id === id);
-        
+
         if (!suivi) {
             return res.status(404).json({ message: 'Suivi not found' });
         }
@@ -46,16 +46,16 @@ const createSuivi = async (req, res) => {
     try {
         const filePath = getTSVFilePath('suivi');
         const suivis = parseTSV(filePath);
-        
+
         const newSuivi = {
             id: generateUniqueId(),
             ...req.body,
             dateCreation: new Date().toISOString()
         };
-        
+
         suivis.push(newSuivi);
         writeTSV(filePath, suivis);
-        
+
         res.status(201).json(suivis);
     } catch (error) {
         res.status(400).json({ message: 'Error creating suivi', error });
@@ -68,20 +68,20 @@ const updateSuivi = async (req, res) => {
     try {
         const filePath = getTSVFilePath('suivi');
         const suivis = parseTSV(filePath);
-        
+
         const suiviIndex = suivis.findIndex(s => s.id === id);
         if (suiviIndex === -1) {
             return res.status(404).json({ message: 'Suivi not found' });
         }
-        
+
         const updatedSuivi = {
             ...suivis[suiviIndex],
             ...req.body
         };
-        
+
         suivis[suiviIndex] = updatedSuivi;
         writeTSV(filePath, suivis);
-        
+
         res.status(200).json(updatedSuivi);
     } catch (error) {
         res.status(400).json({ message: 'Error updating suivi', error });
@@ -94,15 +94,15 @@ const deleteSuivi = async (req, res) => {
     try {
         const filePath = getTSVFilePath('suivi');
         const suivis = parseTSV(filePath);
-        
+
         const suiviIndex = suivis.findIndex(s => s.id === id);
         if (suiviIndex === -1) {
             return res.status(404).json({ message: 'Suivi not found' });
         }
-        
+
         suivis.splice(suiviIndex, 1);
         writeTSV(filePath, suivis);
-        
+
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ message: 'Error deleting suivi', error });

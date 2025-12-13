@@ -18,7 +18,7 @@ const getTarifById = async (req, res) => {
         const filePath = getTSVFilePath('tarifs');
         const tarifs = parseTSV(filePath);
         const tarif = tarifs.find(t => t.id === id);
-        
+
         if (!tarif) {
             return res.status(404).json({ message: 'Tarif not found' });
         }
@@ -33,15 +33,15 @@ const createTarif = async (req, res) => {
     try {
         const filePath = getTSVFilePath('tarifs');
         const tarifs = parseTSV(filePath);
-        
+
         const newTarif = {
             id: generateUniqueId(),
             ...req.body
         };
-        
+
         tarifs.push(newTarif);
         writeTSV(filePath, tarifs);
-        
+
         res.status(201).json(tarif);
     } catch (error) {
         res.status(400).json({ message: 'Error creating tarif', error });
@@ -54,20 +54,20 @@ const updateTarif = async (req, res) => {
     try {
         const filePath = getTSVFilePath('tarifs');
         const tarifs = parseTSV(filePath);
-        
+
         const tarifIndex = tarifs.findIndex(t => t.id === id);
         if (tarifIndex === -1) {
             return res.status(404).json({ message: 'Tarif not found' });
         }
-        
+
         const updatedTarif = {
             ...tarifs[tarifIndex],
             ...req.body
         };
-        
+
         tarifs[tarifIndex] = updatedTarif;
         writeTSV(filePath, tarifs);
-        
+
         res.status(200).json(updatedTarif);
     } catch (error) {
         res.status(400).json({ message: 'Error updating tarif', error });
@@ -80,15 +80,15 @@ const deleteTarif = async (req, res) => {
     try {
         const filePath = getTSVFilePath('tarifs');
         const tarifs = parseTSV(filePath);
-        
+
         const tarifIndex = tarifs.findIndex(t => t.id === id);
         if (tarifIndex === -1) {
             return res.status(404).json({ message: 'Tarif not found' });
         }
-        
+
         tarifs.splice(tarifIndex, 1);
         writeTSV(filePath, tarifs);
-        
+
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ message: 'Error deleting tarif', error });

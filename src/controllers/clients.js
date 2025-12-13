@@ -18,7 +18,7 @@ const getClientById = async (req, res) => {
         const filePath = getTSVFilePath('clients');
         const clients = parseTSV(filePath);
         const client = clients.find(c => c.id === id);
-        
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
@@ -33,18 +33,18 @@ const createClient = async (req, res) => {
     try {
         const filePath = getTSVFilePath('clients');
         const clients = parseTSV(filePath);
-        
+
         const newClient = {
             id: generateUniqueId(),
             ...req.body,
             dateCreation: new Date().toISOString(),
             lastDate: new Date().toISOString()
         };
-        
+
         clients.push(newClient);
         writeTSV(filePath, clients);
-        
-        res.status(201).json(newClient);
+
+        res.status(201).json(Client);
     } catch (error) {
         res.status(400).json({ message: 'Error creating client', error });
     }
@@ -56,21 +56,21 @@ const updateClient = async (req, res) => {
     try {
         const filePath = getTSVFilePath('clients');
         const clients = parseTSV(filePath);
-        
+
         const clientIndex = clients.findIndex(c => c.id === id);
         if (clientIndex === -1) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        
+
         const updatedClient = {
             ...clients[clientIndex],
             ...req.body,
             lastDate: new Date().toISOString()
         };
-        
+
         clients[clientIndex] = updatedClient;
         writeTSV(filePath, clients);
-        
+
         res.status(200).json(updatedClient);
     } catch (error) {
         res.status(400).json({ message: 'Error updating client', error });
@@ -83,15 +83,15 @@ const deleteClient = async (req, res) => {
     try {
         const filePath = getTSVFilePath('clients');
         const clients = parseTSV(filePath);
-        
+
         const clientIndex = clients.findIndex(c => c.id === id);
         if (clientIndex === -1) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        
+
         clients.splice(clientIndex, 1);
         writeTSV(filePath, clients);
-        
+
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ message: 'Error deleting client', error });

@@ -56,6 +56,19 @@
         }
     </style>
     <script>
+        // Time helpers
+        function timeToMinutes(str) {
+            if (!str) return 0;
+            const [h, m] = str.split(':').map(Number);
+            return (h || 0) * 60 + (m || 0);
+        }
+
+        function minutesToTime(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
         // Navigation handler for section switching with API calls
         function showSection(sectionId) {
             // Hide all sections
@@ -284,10 +297,13 @@
         // Load suivi data
         async function loadSuiviData() {
             try {
-                const response = await fetch('/api/suivi');
-                const data = await response.json();
-                populateSuiviTable(data);
-                populateTarifsSelect();
+                const [suiviData, tarifsData] = await Promise.all([
+                    fetch('/api/suivi').then(r => r.json()),
+                    fetch('/api/tarifs').then(r => r.json())
+                ]);
+                window.availableTarifs = tarifsData;
+                populateSuiviTable(suiviData, tarifsData);
+                populateTarifsSelect(tarifsData);
             } catch (error) {
                 console.error('Error loading suivi data:', error);
             }
@@ -310,6 +326,7 @@
             try {
                 const response = await fetch('/api/tarifs');
                 const data = await response.json();
+                window.availableTarifs = data;
                 populateTarifsTable(data);
             } catch (error) {
                 console.error('Error loading tarifs data:', error);
@@ -332,7 +349,7 @@
         }
 
         // Populate suivi table
-        function populateSuiviTable(data) {
+        function populateSuiviTable(data, tarifs = []) {
             const tbody = document.querySelector('#PropalsTable tbody');
             if (!tbody) return;
 
@@ -340,14 +357,42 @@
             data.forEach(item => {
                 const row = document.createElement('tr');
                 const date = new Date(item.date_heure).toLocaleDateString('fr-FR');
+
+                // Calculs dynamiques
+                let totalDureeMins = 0;
+                let totalMontant = 0;
+                let hasItems = false;
+
+                let itemsMap = {};
+                try {
+                    if (item.id_tarifs && item.id_tarifs !== 'undefined') {
+                        itemsMap = typeof item.id_tarifs === 'string' ? JSON.parse(item.id_tarifs) : item.id_tarifs;
+                    }
+                } catch (e) { }
+
+                if (itemsMap && Object.keys(itemsMap).length > 0 && tarifs.length > 0) {
+                    hasItems = true;
+                    Object.entries(itemsMap).forEach(([tid, details]) => {
+                        const t = tarifs.find(x => x.id === tid);
+                        if (t) {
+                            const q = details.qtt || 0;
+                            totalMontant += parseFloat(t.prix || 0) * q;
+                            totalDureeMins += timeToMinutes(t.timeByUnits || t.duree || '00:00') * q;
+                        }
+                    });
+                }
+
+                const displayDuree = hasItems ? minutesToTime(totalDureeMins) : (item.duree || '');
+                const displayMontant = hasItems ? totalMontant.toFixed(2) : parseFloat(item.montant || 0).toFixed(2);
+
                 row.innerHTML = `
                     <td class="id">${item.id}</td>
                     <td class="devis_number">${item.devis_number || ''}</td>
                     <td>${date}</td>
-                    <td>${item.duree || ''}</td>
+                    <td>${displayDuree}</td>
                     <td class="id_client">${item.client_name || item.id_client || ''}</td>
                     <td class="id_tarifs">[...]</td>
-                    <td>${parseFloat(item.montant || 0).toFixed(2)} €</td>
+                    <td>${displayMontant} €</td>
                     <td><span class="badge-${item.statut?.toLowerCase() || 'secondary'}">${item.statut || ''}</span></td>
                     <td>${item.mode_paiement || ''}</td>
                     <td>${item.date_paiement || ''}</td>
@@ -409,12 +454,18 @@
             tbody.innerHTML = '';
             data.forEach(item => {
                 const row = document.createElement('tr');
+                // Double-click to edit
+                row.addEventListener('dblclick', function () { editTarifRow(this, item.id); });
+
                 row.innerHTML = `
                     <td>${item.libelle || ''}</td>
                     <td>${item.timeByUnits || item.duree || ''}</td>
-                    <td>${parseFloat(item.montant || 0).toFixed(2)} €</td>
+                    <td>${parseFloat(item.prix || 0).toFixed(2)} €</td>
+                    <td>${item.Unit || ''}</td>
+                    <td>${item.type || ''}</td>
+                    <td>${item.Comment || ''}</td>
                     <td class="actions-cell">
-                        <button class="btn-icon" title="Éditer" onclick="/* TODO: edit tarif logic */">
+                        <button class="btn-icon" title="Éditer" onclick="editTarifRow(this.closest('tr'), '${item.id}')">
                             <svg viewBox="0 0 18 18"><path d="M2 13.12l8.49-8.488 2.878 2.878L4.878 16H2v-2.88zm13.776-8.017L14.37 6.507 11.494 3.63l1.404-1.406c.3-.3.783-.3 1.083 0l1.8 1.796c.3.3.3.784 0 1.083z" fill-rule="evenodd"></path></svg>
                         </button>
                         <button class="btn-icon" title="Supprimer" hx-delete="/api/tarifs/${item.id}" hx-target="#viewTarifs" hx-swap="innerHTML swap:1s">
@@ -427,10 +478,14 @@
         }
 
         // Populate tarifs select
-        async function populateTarifsSelect() {
+        async function populateTarifsSelect(providedData = null) {
             try {
-                const response = await fetch('/api/tarifs');
-                const data = await response.json();
+                let data = providedData;
+                if (!data) {
+                    const response = await fetch('/api/tarifs');
+                    data = await response.json();
+                    window.availableTarifs = data;
+                }
                 const select = document.querySelector('#PropalTarif');
                 if (!select) return;
 
@@ -438,7 +493,7 @@
                 data.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.id;
-                    option.textContent = `${item.libelle} - ${parseFloat(item.montant || 0).toFixed(2)} €`;
+                    option.textContent = `${item.libelle} - ${parseFloat(item.prix || 0).toFixed(2)} €`;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -586,9 +641,9 @@
                 window.availableTarifs.forEach(t => {
                     const option = document.createElement('option');
                     option.value = t.id;
-                    // Format: "Libellé | Durée (min) | Montant (€)"
+                    // Format: "Libellé | Durée (min) | Prix (€)"
                     const duration = t.timeByUnits || t.duree || '?';
-                    const amount = parseFloat(t.montant || 0).toFixed(2);
+                    const amount = parseFloat(t.prix || 0).toFixed(2);
                     option.textContent = `${t.libelle} | ${duration} min | ${amount} €`;
                     if (t.id === selectedId) option.selected = true;
                     // Stocker le prix dans data attribute pour accès facile
@@ -628,7 +683,7 @@
             const priceCell = document.createElement('td');
             priceCell.className = 'price-cell';
             priceCell.style.textAlign = 'right';
-            const price = tarif ? parseFloat(tarif.montant || 0).toFixed(2) : '0.00';
+            const price = tarif ? parseFloat(tarif.prix || 0).toFixed(2) : '0.00';
             priceCell.textContent = price + ' €';
 
             // Actions
@@ -719,6 +774,106 @@
             } catch (error) {
                 console.error('Erreur sauvegarde:', error);
                 alert('Erreur de connexion lors de la sauvegarde');
+            }
+        }
+
+        // --- Gestion Inline Tarifs ---
+
+        function addTarifRow() {
+            const tbody = document.querySelector('#tarifsTable tbody');
+            const row = document.createElement('tr');
+            row.classList.add('editing-row');
+            row.innerHTML = `
+                <td><input type="text" name="libelle" class="form-input" placeholder="Libellé" required></td>
+                <td><input type="text" name="timeByUnits" class="form-input" placeholder="HH:MM"></td>
+                <td><input type="number" name="prix" class="form-input" step="0.01" placeholder="Prix"></td>
+                <td><input type="text" name="Unit" class="form-input" placeholder="Unité"></td>
+                <td>
+                    <select name="type" class="form-input">
+                        <option value="Presta-BNC">Presta-BNC</option>
+                        <option value="Presta-BIC">Presta-BIC</option>
+                        <option value="Vente-BIC">Vente-BIC</option>
+                    </select>
+                </td>
+                <td><input type="text" name="Comment" class="form-input" placeholder="Commentaire"></td>
+                <td class="actions-cell">
+                    <button class="btn-icon" title="Sauvegarder" onclick="saveTarifRow(this.closest('tr'))">
+                       <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </button>
+                    <button class="btn-icon" title="Annuler" onclick="loadTarifsData()">
+                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </button>
+                </td>
+            `;
+            tbody.prepend(row);
+        }
+
+        function editTarifRow(row, id) {
+            const data = window.availableTarifs.find(t => t.id === id);
+            if (!data) return;
+
+            row.dataset.id = id;
+            row.innerHTML = `
+                <td><input type="text" name="libelle" class="form-input" value="${data.libelle || ''}"></td>
+                <td><input type="text" name="timeByUnits" class="form-input" value="${data.timeByUnits || data.duree || ''}" placeholder="HH:MM"></td>
+                <td><input type="number" name="prix" class="form-input" step="0.01" value="${data.prix || 0}"></td>
+                <td><input type="text" name="Unit" class="form-input" value="${data.Unit || ''}"></td>
+                <td>
+                    <select name="type" class="form-input">
+                        <option value="Presta-BNC" ${data.type === 'Presta-BNC' ? 'selected' : ''}>Presta-BNC</option>
+                        <option value="Presta-BIC" ${data.type === 'Presta-BIC' ? 'selected' : ''}>Presta-BIC</option>
+                        <option value="Vente-BIC" ${data.type === 'Vente-BIC' ? 'selected' : ''}>Vente-BIC</option>
+                    </select>
+                </td>
+                <td><input type="text" name="Comment" class="form-input" value="${data.Comment || ''}"></td>
+                <td class="actions-cell">
+                    <button class="btn-icon" title="Sauvegarder" onclick="saveTarifRow(this.closest('tr'))">
+                       <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </button>
+                    <button class="btn-icon" title="Annuler" onclick="loadTarifsData()">
+                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </button>
+                </td>
+             `;
+            // Remove dblclick to prevent re-triggering?
+            row.removeAttribute('ondblclick'); // Removing attribute if set via HTML, but here removal listener is harder.
+            // Replacing innerHTML removes listeners on children, but row listener remains.
+            // We can just clone node to strip listeners, or ignore multiple clicks.
+            // Easier: just let it be, replacing innerHTML again is fine.
+        }
+
+        async function saveTarifRow(row) {
+            const id = row.dataset.id;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/tarifs/${id}` : '/api/tarifs';
+
+            const payload = {};
+            const inputs = row.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                payload[input.name] = input.value;
+            });
+
+            if (!payload.libelle || !payload.prix) {
+                alert("Le libellé et le prix sont obligatoires.");
+                return;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    loadTarifsData(); // Refresh table
+                } else {
+                    const err = await response.json();
+                    alert("Erreur: " + (err.message || "Erreur inconnue"));
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erreur de connexion.");
             }
         }
 
@@ -954,7 +1109,7 @@
         <section id="viewTarifs" class="view">
             <div class="section-header">
                 <h2>Gestion des Tarifs</h2>
-                <button id="btnAddTarif" class="btn btn-primary" hx-on:click="toggleForm('tarifFormContainer')">Ajouter
+                <button id="btnAddTarif" class="btn btn-primary" type="button" onclick="addTarifRow()">Ajouter
                     un Tarif</button>
             </div>
             <div id="tarifFormContainer" class="form-container hidden">
@@ -965,8 +1120,8 @@
                         <input type="text" id="tarifLibelle" name="libelle" required>
                     </div>
                     <div class="form-group">
-                        <label for="tarifMontant">Montant (€)*</label>
-                        <input type="number" id="tarifMontant" name="montant" step="0.01" min="0" required>
+                        <label for="tarifPrix">Prix (€)*</label>
+                        <input type="number" id="tarifPrix" name="prix" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
                         <label for="tarifUnit">Unité</label>
@@ -1002,7 +1157,10 @@
                         <tr>
                             <th>Libellé</th>
                             <th>Durée (min)</th>
-                            <th>Montant (€)</th>
+                            <th>Prix (€)</th>
+                            <th>Unité</th>
+                            <th>Type</th>
+                            <th>Commentaire</th>
                             <th class="actions-cell">Actions</th>
                         </tr>
                     </thead>

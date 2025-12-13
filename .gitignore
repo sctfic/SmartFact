@@ -3,3 +3,6 @@ package-lock.json
 datas/.gitkeep
 datas/Devis/DEV-2025-0903.json
 datas/Factures/FAC-2025-0901.json
+Oauth2.json
+datas/suiviActivite.tsv
+datas/tarifs.tsv

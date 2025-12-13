@@ -1,6 +1,6 @@
 {
-  "name": "SmartFact",
-  "version": "0.0.1",
+  "name": "smartfact",
+  "version": "0.0.12",
   "description": "Backend SmartFact",
   "main": "src/server.js",
   "scripts": {
