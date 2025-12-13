@@ -1,0 +1,278 @@
+/* public/css/global.css */
+
+:root {
+    /* Ces variables peuvent toujours être utiles si d'autres parties du JS les utilisent,
+       mais ne sont plus directement pour l'animation de rétrécissement elle-même. */
+    --header-height: 60px; 
+    --footer-height: 40px; 
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-size: 0.95rem;
+    overflow-x: hidden; 
+}
+
+/* Styles de base pour header et footer */
+header, footer {
+    /* z-index: 1; /* Plus crucial ici si main ne passe pas dessus */
+    flex-shrink: 0; 
+    overflow: hidden; /* Important pour l'animation de max-height */
+    /* Définir une max-height initiale plus grande que le contenu pour que la transition vers 0 fonctionne */
+    /* Vous devrez peut-être ajuster ces valeurs en fonction de votre contenu réel */
+}
+footer {
+    flex-shrink: 0;
+}
+header {
+    background-color: #007bff;
+    color: white;
+    text-align: center; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+    position: relative; 
+    max-height: 100px; /* Hauteur max pour la transition */
+    padding: 0.7rem 1.2rem; /* Padding initial */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+}
+
+footer {
+    text-align: center;
+    background-color: #343a40;
+    color: white;
+    margin-top: auto; 
+    font-size: 0.93em;
+    max-height: 60px; /* Hauteur max pour la transition */
+}
+
+/* Styles pour l'animation de rétrécissement et de fondu */
+header, footer {
+    /* La transition est de 1 seconde comme demandé */
+    transition: max-height 1s ease-in-out, 
+                padding-top 1s ease-in-out, 
+                padding-bottom 1s ease-in-out,
+                opacity 1s ease-in-out,
+                visibility 0s linear 1s; /* visibility change après 1s */
+    opacity: 1;
+    visibility: visible;
+}
+
+header.hidden-animated, /* Utilisation de la même classe qu'avant mais avec un effet différent */
+footer.hidden-animated {
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    opacity: 0;
+    /* border-width: 0; /* Si vous avez des bordures à faire disparaître */
+    visibility: hidden; /* Disparaît du flux après l'animation */
+    /* La propriété transform: translateY(...) est supprimée pour un rétrécissement sur place */
+}
+
+
+nav {
+    background-color: #343a40; 
+    padding: 0.3rem 0; 
+    display: flex; /* Ensures nav items are in a row */
+    align-items: center; /* Vertically aligns items in the nav */
+    justify-content: space-between; /* This will be effectively overridden by spacers for the central block */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+    position: relative; /* Crucial for absolute positioning of fullscreenToggleBtn */
+    flex-shrink: 0; 
+    width: 100%; /* Ensure nav takes full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    z-index: 3;
+}
+
+/* New styles for spacers */
+.nav-spacer-left {
+    min-width: 40px; /* Minimum width for left spacer */
+}
+.nav-spacer-left {
+    flex-grow: 1;  /* Allows spacers to take up available space */
+    flex-basis: 0; /* Distributes space based on flex-grow */
+    /* border: 1px dashed yellow; /* For debugging layout - remove later */
+}
+
+/* Ensure the button group doesn't get squashed by spacers if content is minimal */
+nav button.nav-btn {
+    flex-shrink: 0; /* Prevent nav buttons from shrinking if space is tight */
+}
+
+
+.nav-spacer-right {
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 15px; /* Espace avant le bouton fullscreen */
+}
+
+.data-context-display {
+    text-align: center;
+    font-weight: bold;
+    color: #495057;
+    width: 100%;
+    opacity: 0.5;
+    font-size: 1.2rem;
+}
+main {
+    flex-grow: 1;
+    margin: 6px auto; 
+    width: 100%; 
+    box-sizing: border-box;
+    transition: max-width 0.3s ease-in-out, padding-left 0.3s ease-in-out, padding-right 0.3s ease-in-out;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    z-index: 1;
+}
+
+main.main-full-width {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.view {
+    display: none;
+    animation: fadeIn 0.4s;
+}
+
+#viewPropals.active,
+#viewClients.active {
+    padding-left: 0.5rem; 
+    padding-right: 0.5rem;
+    box-sizing: border-box;
+}
+
+.view.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+h2 {
+    color: #0056b3;
+    border-bottom: 1px solid #007bff;
+    padding-bottom: 0.3rem;
+    margin-top: 0;
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+}
+
+.hidden { 
+    display: none !important; 
+}
+
+.user-profile-container {
+    position: relative;
+    display: inline-block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.user-profile-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px; /* Hauteur fixe pour le conteneur */
+    width: 32px;  /* Largeur fixe pour le conteneur */
+    cursor: pointer;
+}
+
+/* Style commun pour l'icône SVG et l'image de profil */
+.nav-google-icon {
+    height: 100%;
+    width: 100%;
+    vertical-align: middle;
+    border-radius: 50%; /* Arrondi pour l'image et le conteneur SVG */
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+    box-sizing: border-box; /* S'assure que la bordure est à l'intérieur */
+}
+/* .nav-google-icon:hover {
+    border-color: #ddd;
+} */
+.user-profile-container:hover > .nav-google-icon {
+    border-color: #ddd;
+}
+.user-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 220px;
+    z-index: 1000;
+    padding: 8px 0;
+    transition: opacity 0.2s, transform 0.2s;
+    transform-origin: top right;
+}
+
+.user-profile-dropdown.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+.dropdown-user-info {
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-user-name {
+    font-weight: bold;
+    color: #202124;
+}
+
+.dropdown-user-email {
+    font-size: 0.9em;
+    color: #5f6368;
+}
+
+.dropdown-divider {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+}
+
+.dropdown-button {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: #3c4043;
+}
+
+.dropdown-button:hover {
+    background-color: #f1f3f4;
+}
+
+.line-clone {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-dasharray: 5,3;
+    pointer-events: none;
+}

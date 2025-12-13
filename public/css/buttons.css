@@ -1,0 +1,235 @@
+/* css/buttons.css */
+/* Styles pour les boutons de navigation */
+nav button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.2rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s, border-bottom 0.2s;
+    /* min-width: 90px; */
+    border-bottom: 3px solid transparent; 
+}
+
+nav button:hover {
+    background-color: #0056b3; 
+    color: #fff;
+}
+
+nav button.active {
+    background-color: #0056b3; 
+    color: #ffffff; 
+    font-weight: bold; 
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); 
+    border-bottom: 3px solid #00c6ff; 
+}
+
+/* Styles pour les boutons d'action généraux */
+.actions-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.35rem 0.8rem;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    transition: background-color 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    /* min-width: 70px; */
+}
+.btn-sm {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+.btn-primary { background-color: #007bff; color: white; }
+.btn-primary:hover { background-color: #0056b3; box-shadow: 0 2px 5px rgba(0,86,179,0.13); }
+.btn-secondary { background-color: #6c757d; color: white; }
+.btn-secondary:hover { background-color: #545b62; box-shadow: 0 2px 5px rgba(84,91,98,0.13); }
+.btn-success { background-color: #28a745; color: white; }
+.btn-success:hover { background-color: #1e7e34; box-shadow: 0 2px 5px rgba(30,126,52,0.13); }
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #b02a37; box-shadow: 0 2px 5px rgba(176,42,55,0.13); }
+.btn-warning { background-color: #ffc107; color: #212529; }
+.btn-warning:hover { background-color: #d39e00; box-shadow: 0 2px 5px rgba(211,158,0,0.13); }
+.btn-info { background-color: #17a2b8; color: white; }
+.btn-info:hover { background-color: #117a8b; box-shadow: 0 2px 5px rgba(17,122,139,0.13); }
+
+.btn-file-input { display: inline-block; }
+.btn-file-input input[type="file"] { display: none; }
+
+/* Style pour les boutons de suppression avec icône uniquement */
+.btn-icon-delete {
+    font-size: 1rem;      /* Augmente la taille de l'icône (était 0.85rem via .btn-sm) */
+    padding: 0.2rem 0.2rem 0.1rem 0.2rem; /* Réduit le padding pour un bouton plus petit */
+    line-height: 1;         /* Aide à centrer l'icône verticalement */
+    min-width: auto;        /* Annule le min-width de .btn pour que le bouton s'adapte à l'icône */
+    /* margin: 0 2px; /* Ajustez les marges externes si nécessaire pour l'espacement avec d'autres boutons */
+}
+
+/* fullscreenToggleBtn styles (mostly unchanged but ensure it's relative to nav) */
+#fullscreenToggleBtn {
+    position: absolute; /* Position relative to the <nav> element */
+    top: 50%;          
+    transform: translateY(-50%); 
+    background: transparent;
+    border: none;
+    color: white;      
+    font-size: 1.6rem; 
+    padding: 0.3rem 0.5rem; 
+    cursor: pointer;
+    line-height: 1;    
+    transition: opacity 0.6s;
+    z-index: 10; /* Above other nav content if overlap occurs */
+}
+
+.brightness {
+    filter: brightness(10%) invert(90%);
+}
+nav .brightness {
+    filter: brightness(30%) invert(70%);
+}
+.brightness:hover {
+    filter: brightness(0) invert(1);
+}
+
+
+/* Styles for nav buttons (existing, ensure they are targeted correctly) */
+nav button.nav-btn {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.2rem; /* Spacing between buttons */
+    cursor: pointer;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s, border-bottom 0.2s;
+    /* min-width: 90px; */
+    border-bottom: 3px solid transparent; 
+    flex-shrink: 0; /* Prevents buttons from shrinking too much */
+}
+
+nav button.nav-btn:hover {
+    background-color: #0056b3; 
+    color: #fff;
+}
+
+nav button.nav-btn.active {
+    background-color: #0056b3; 
+    color: #ffffff; 
+    font-weight: bold; 
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); 
+    border-bottom: 3px solid #00c6ff; 
+}
+.section-header {
+    display: flex;                 /* Active le modèle de boîte flexible */
+    justify-content: space-between;/* Pousse le titre et le bouton aux extrémités opposées */
+    align-items: center;           /* Centre verticalement le bouton par rapport au titre */
+    margin-bottom: 1rem;           /* Espace sous l'en-tête (repris du style h2 original) */
+    
+    /* Reprise des styles visuels du h2 pour le conteneur */
+    border-bottom: 1px solid #007bff;
+    padding-bottom: 0.3rem;
+}
+
+/* Ajustement pour le h2 qui est maintenant à l'intérieur de notre conteneur.
+   On supprime les styles qui sont maintenant gérés par .section-header.
+*/
+.section-header h2 {
+    border-bottom: none; /* La bordure est maintenant sur le parent */
+    padding-bottom: 0;   /* Le padding est maintenant sur le parent */
+    margin-bottom: 0;    /* La marge est maintenant sur le parent */
+    margin-top: 0;
+}
+/* public/css/buttons.css - Add at the end or in a dedicated responsive stylesheet */
+
+@media (max-width: 768px) {
+    #fullscreenToggleBtn {
+        font-size: 1.4rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    nav button.nav-btn {
+        min-width: auto; 
+        padding: 0.5rem 0.6rem; 
+        font-size: 0.85rem; 
+        margin: 0 1px;
+    }
+
+    /* Adjust spacers if needed, or allow the central button group to scroll */
+    /* If the central button group itself needs to scroll: */
+    /* You might need to wrap the nav-buttons in a div and make that div scrollable */
+    nav {
+        /* If buttons (excluding spacers) overflow, allow nav to scroll them */
+        /* overflow-x: auto; */ /* Enable this if the button group is too wide */
+    }
+}
+
+@media (max-width: 480px) {
+    #fullscreenToggleBtn {
+        font-size: 1.3rem;
+    }
+
+    nav button.nav-btn {
+        padding: 0.3rem 0.3rem;
+        font-size: 0.8rem;
+    }
+     /* If you enable overflow-x: auto; on nav for 768px, it applies here too */
+}
+.export-sheets-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.export-sheets-btn:hover {
+    background-color: #e9ecef;
+}
+
+.export-sheets-btn:hover .rebond {
+    animation: rebondAnimation 0.5s ease;
+}
+
+.export-sheets-btn span {
+    font-weight: 500;
+    color: #202124;
+}
+/* Animation pour l'icône Google Sheets */
+.sheets-icon {
+    width: 24px; /* Taille raisonnable */
+    height: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    filter: brightness(0.9); /* Légèrement assombrie par défaut */
+}
+
+.sheets-icon:hover {
+    animation: sheetsBounce 0.5s ease;
+    filter: brightness(1) drop-shadow(0 0 4px rgba(66, 133, 244, 0.4));
+    transform: scale(1.1);
+}
+
+@keyframes sheetsBounce {
+    0%, 100% {
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+}

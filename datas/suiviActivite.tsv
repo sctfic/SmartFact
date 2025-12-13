@@ -1,0 +1,3 @@
+id	devis_number	id_client	date_heure	duree	id_tarifs	statut	montant	mode_paiement	date_paiement	invoice_number	googleCalendarEventId
+7v6t-87hv4rbj-05y5y4w-tj5	0001	9y-65edfv-65eydf-5e6	2025-11-21T13:00	sum(timeByUnits*qtt)	{"08ytr2s-qsb34fr-3s2":{"qtt":3,"detail":""},"8e90s3h-90b74gr-w6t":{"qtt":3,"detail":""}}	envoyee		122		devi01	eqAS2
+jv6t-87tv4sb8-0js1s4w-he1	0002	9y-65edfv-65eydf-5e6	2025-11-23T13:00	sum(timeByUnits*qtt)	{"08ytr2s-qsb34fr-3s2":{"qtt":3,"detail":""},"8e90s3h-90b74gr-w6t":{"qtt":3,"detail":""}}	APAYER!		122		FACT_20251023-0001	asdQW

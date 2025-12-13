@@ -1,0 +1,39 @@
+{
+  "manager": {
+    "name": "",
+    "title": "",
+    "description": "",
+    "address": "",
+    "city": "",
+    "phone": "",
+    "email": ""
+  },
+  "googleOAuth": {
+    "userEmail": "alban.lopez@gmail.com",
+    "userName": "Alban Lopez",
+    "profilePictureUrl": "https://lh3.googleusercontent.com/a/ACg8ocI6-TSCtm0FqMoU-A4hpQR1HKn9bUe2AhjH2hmbWcZf5t_JuaS1=s96-c",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/drive",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "openid",
+      "https://www.googleapis.com/auth/gmail.send"
+    ]
+  },
+  "tva": 0,
+  "legal": {
+    "siret": "",
+    "ape": "",
+    "adeli": "",
+    "iban": "",
+    "bic": "",
+    "tvaMention": "TVA non applicable selon l'article 293B du Code Général des Impôts",
+    "paymentTerms": "Paiement à réception de facture",
+    "insurance": "AXA Assurances - Police n° 123456789 - Garantie territoriale : France/Europe"
+  },
+  "googleCalendar": {
+    "calendarId": "primary"
+  }
+}
