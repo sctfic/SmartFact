@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,7 @@
     <link rel="stylesheet" href="css/components.css">
     <script src="js/d3.min.js"></script>
     <script src="js/plot.umd.js"></script>
-<style>
+    <style>
         /* Auto-hide header/footer with smooth transition */
         header {
             transition: max-height 0.5s ease-in-out, margin 0.5s ease-in-out, padding 0.5s ease-in-out;
@@ -22,6 +23,7 @@
             max-height: 500px;
             overflow: hidden;
         }
+
         footer.footer {
             transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out, margin 0.5s ease-in-out;
             opacity: 1;
@@ -122,18 +124,18 @@
             const initialSection = hash || 'viewPropals';
             showSection(initialSection);
 
-           // Fullscreen toggle button handler with cross-browser support
+            // Fullscreen toggle button handler with cross-browser support
             const fullscreenBtn = document.getElementById('fullscreenToggleBtn');
-            
+
             const toggleFullscreen = () => {
                 const elem = document.documentElement;
-                
+
                 // Check if already in fullscreen
-                const isFullscreen = document.fullscreenElement || 
-                                    document.webkitFullscreenElement || 
-                                    document.mozFullScreenElement || 
-                                    document.msFullscreenElement;
-                
+                const isFullscreen = document.fullscreenElement ||
+                    document.webkitFullscreenElement ||
+                    document.mozFullScreenElement ||
+                    document.msFullscreenElement;
+
                 if (!isFullscreen) {
                     // Enter fullscreen with cross-browser support
                     if (elem.requestFullscreen) {
@@ -163,11 +165,11 @@
             };
 
             const updateFullscreenIcon = () => {
-                const isFullscreen = document.fullscreenElement || 
-                                    document.webkitFullscreenElement || 
-                                    document.mozFullScreenElement || 
-                                    document.msFullscreenElement;
-                
+                const isFullscreen = document.fullscreenElement ||
+                    document.webkitFullscreenElement ||
+                    document.mozFullScreenElement ||
+                    document.msFullscreenElement;
+
                 if (isFullscreen) {
                     fullscreenBtn.src = 'img/reduce.svg';
                     fullscreenBtn.alt = 'Quitter le plein écran';
@@ -178,10 +180,10 @@
                     fullscreenBtn.title = 'Passer en plein écran (F11)';
                 }
             };
-            
+
             // Add click event
             fullscreenBtn?.addEventListener('click', toggleFullscreen);
-            
+
             // Listen to all fullscreen change events (cross-browser)
             document.addEventListener('fullscreenchange', updateFullscreenIcon);
             document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
@@ -193,12 +195,22 @@
                 document.body.classList.add('autohide');
             }, 3000);
 
+            // Fermer la modale d'items en cliquant à l'extérieur
+            const invoiceModal = document.getElementById('invoiceItemsModal');
+            if (invoiceModal) {
+                invoiceModal.addEventListener('click', function (event) {
+                    // Si on clique sur le fond de la modale (l'overlay)
+                    if (event.target === invoiceModal) {
+                        closeInvoiceItemsModal();
+                    }
+                });
+            }
         });
 
         // Load section data from API
         async function loadSectionData(sectionId) {
             try {
-                switch(sectionId) {
+                switch (sectionId) {
                     case 'viewPropals':
                         await loadSuiviData();
                         await populateClientsSelect();
@@ -226,7 +238,7 @@
             try {
                 const response = await fetch('/api/settings');
                 const settings = await response.json();
-                
+
                 // Populate form fields
                 document.getElementById('configManagerName').value = settings.managerName || '';
                 document.getElementById('configManagerTitle').value = settings.managerTitle || '';
@@ -254,10 +266,10 @@
                 const response = await fetch('/api/clients');
                 const clients = await response.json();
                 const select = document.getElementById('PropalClientSelect');
-                
+
                 // Clear existing options except first one
                 select.innerHTML = '<option value="">-- Sélectionner un client --</option>';
-                
+
                 clients.forEach(client => {
                     const option = document.createElement('option');
                     option.value = client.id;
@@ -312,7 +324,7 @@
                     fetch('/api/tarifs').then(r => r.json()),
                     fetch('/api/suivi').then(r => r.json())
                 ]);
-                
+
                 updateDashboardStats(clients, tarifs, suivi);
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
@@ -323,7 +335,7 @@
         function populateSuiviTable(data) {
             const tbody = document.querySelector('#PropalsTable tbody');
             if (!tbody) return;
-            
+
             tbody.innerHTML = '';
             data.forEach(item => {
                 const row = document.createElement('tr');
@@ -333,15 +345,23 @@
                     <td class="devis_number">${item.devis_number || ''}</td>
                     <td>${date}</td>
                     <td>${item.duree || ''}</td>
-                    <td>${item.client_name || item.id_client || ''}</td>
-                    <td>${item.id_tarifs || ''}</td>
+                    <td class="id_client">${item.client_name || item.id_client || ''}</td>
+                    <td class="id_tarifs">[...]</td>
                     <td>${parseFloat(item.montant || 0).toFixed(2)} €</td>
                     <td><span class="badge-${item.statut?.toLowerCase() || 'secondary'}">${item.statut || ''}</span></td>
                     <td>${item.mode_paiement || ''}</td>
                     <td>${item.date_paiement || ''}</td>
                     <td>${item.invoice_number || ''}</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" hx-delete="/api/suivi/${item.id}" hx-target="#viewPropals" hx-swap="innerHTML swap:1s">Supprimer</button>
+                    <td class="actions-cell">
+                        <button class="btn-icon" title="Dupliquer" onclick="/* TODO: duplicate logic */">
+                            <svg viewBox="0 0 18 18"><path d="M8 7v7h5V7H8zM3.99 2h7.942v2H4.985v8H3V2.995A1 1 0 0 1 3.99 2zM6 5.996c0-.55.446-.996.998-.996h7.004c.55 0 .998.445.998.996v9.008c0 .55-.446.996-.998.996H6.998A.996.996 0 0 1 6 15.004V5.996z" fill-rule="evenodd"></path></svg>
+                        </button>
+                        <button class="btn-icon" title="Éditer les lignes" onclick="openInvoiceItemsModal('${item.id}', '${item.devis_number || ''}')">
+                            <svg viewBox="0 0 18 18"><path d="M2 13.12l8.49-8.488 2.878 2.878L4.878 16H2v-2.88zm13.776-8.017L14.37 6.507 11.494 3.63l1.404-1.406c.3-.3.783-.3 1.083 0l1.8 1.796c.3.3.3.784 0 1.083z" fill-rule="evenodd"></path></svg>
+                        </button>
+                        <button class="btn-icon" title="Supprimer" hx-delete="/api/suivi/${item.id}" hx-target="#viewPropals" hx-swap="innerHTML swap:1s">
+                            <svg viewBox="0 0 18 18"><path d="M6.5 3c0-.552.444-1 1-1h3c.552 0 1 .444 1 1H15v2H3V3h3.5zM4 6h10v8c0 1.105-.887 2-2 2H6c-1.105 0-2-.887-2-2V6z" fill-rule="evenodd"></path></svg>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -352,7 +372,7 @@
         function populateClientsTable(data) {
             const tbody = document.querySelector('#clientsTable tbody');
             if (!tbody) return;
-            
+
             tbody.innerHTML = '';
             data.forEach(item => {
                 const row = document.createElement('tr');
@@ -368,8 +388,13 @@
                     <td>${item.notes || ""}</td>
                     <td><input type="checkbox" ${item.statut === "actif" ? "checked" : ""} disabled></td>
                     <td>${item.dateCreation ? new Date(item.dateCreation).toLocaleDateString("fr-FR") : ""}</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" hx-delete="/api/clients/${item.id}" hx-target="#viewClients" hx-swap="innerHTML swap:1s">Supprimer</button>
+                    <td class="actions-cell">
+                        <button class="btn-icon" title="Éditer" onclick="/* TODO: edit client logic */">
+                            <svg viewBox="0 0 18 18"><path d="M2 13.12l8.49-8.488 2.878 2.878L4.878 16H2v-2.88zm13.776-8.017L14.37 6.507 11.494 3.63l1.404-1.406c.3-.3.783-.3 1.083 0l1.8 1.796c.3.3.3.784 0 1.083z" fill-rule="evenodd"></path></svg>
+                        </button>
+                        <button class="btn-icon" title="Supprimer" hx-delete="/api/clients/${item.id}" hx-target="#viewClients" hx-swap="innerHTML swap:1s">
+                            <svg viewBox="0 0 18 18"><path d="M6.5 3c0-.552.444-1 1-1h3c.552 0 1 .444 1 1H15v2H3V3h3.5zM4 6h10v8c0 1.105-.887 2-2 2H6c-1.105 0-2-.887-2-2V6z" fill-rule="evenodd"></path></svg>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -380,7 +405,7 @@
         function populateTarifsTable(data) {
             const tbody = document.querySelector('#tarifsTable tbody');
             if (!tbody) return;
-            
+
             tbody.innerHTML = '';
             data.forEach(item => {
                 const row = document.createElement('tr');
@@ -388,8 +413,13 @@
                     <td>${item.libelle || ''}</td>
                     <td>${item.timeByUnits || item.duree || ''}</td>
                     <td>${parseFloat(item.montant || 0).toFixed(2)} €</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" hx-delete="/api/tarifs/${item.id}" hx-target="#viewTarifs" hx-swap="innerHTML swap:1s">Supprimer</button>
+                    <td class="actions-cell">
+                        <button class="btn-icon" title="Éditer" onclick="/* TODO: edit tarif logic */">
+                            <svg viewBox="0 0 18 18"><path d="M2 13.12l8.49-8.488 2.878 2.878L4.878 16H2v-2.88zm13.776-8.017L14.37 6.507 11.494 3.63l1.404-1.406c.3-.3.783-.3 1.083 0l1.8 1.796c.3.3.3.784 0 1.083z" fill-rule="evenodd"></path></svg>
+                        </button>
+                        <button class="btn-icon" title="Supprimer" hx-delete="/api/tarifs/${item.id}" hx-target="#viewTarifs" hx-swap="innerHTML swap:1s">
+                            <svg viewBox="0 0 18 18"><path d="M6.5 3c0-.552.444-1 1-1h3c.552 0 1 .444 1 1H15v2H3V3h3.5zM4 6h10v8c0 1.105-.887 2-2 2H6c-1.105 0-2-.887-2-2V6z" fill-rule="evenodd"></path></svg>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -403,7 +433,7 @@
                 const data = await response.json();
                 const select = document.querySelector('#PropalTarif');
                 if (!select) return;
-                
+
                 select.innerHTML = '<option value="">Sélectionner un tarif</option>';
                 data.forEach(item => {
                     const option = document.createElement('option');
@@ -421,32 +451,32 @@
             // Update client count
             const clientCount = document.querySelector('#statClientsCount');
             if (clientCount) clientCount.textContent = clients.length;
-            
+
             // Update propal count
             const propalCount = document.querySelector('#statPropalsCount');
             if (propalCount) propalCount.textContent = suivi.length;
-            
+
             // Update paid count
             const paidCount = document.querySelector('#statPropalsPayees');
             if (paidCount) {
                 const paid = suivi.filter(s => s.statut === 'PAYEE').length;
                 paidCount.textContent = paid;
             }
-            
+
             // Calculate revenue for different periods
             const now = new Date();
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
-            
+
             let caMoisEnCours = 0;
             let caMoisPrecedent = 0;
             let caAnneeEnCours = 0;
             let caAnneePrecedente = 0;
-            
+
             suivi.forEach(item => {
                 const date = new Date(item.date_heure);
                 const amount = parseFloat(item.montant || 0);
-                
+
                 if (date.getFullYear() === currentYear) {
                     caAnneeEnCours += amount;
                     if (date.getMonth() === currentMonth) {
@@ -455,32 +485,256 @@
                 } else if (date.getFullYear() === currentYear - 1) {
                     caAnneePrecedente += amount;
                 }
-                
+
                 if (date.getMonth() === (currentMonth - 1) && date.getFullYear() === currentYear) {
                     caMoisPrecedent += amount;
                 }
             });
-            
+
             const caMoisPrecedentEl = document.querySelector('#caMoisPrecedent');
             const caMoisEnCoursEl = document.querySelector('#caMoisEnCours');
             const caAnneeAnterieureEl = document.querySelector('#caAnneePrecedente');
             const caAnneeEnCoursEl = document.querySelector('#caAnneeEnCours');
-            
+
             if (caMoisPrecedentEl) caMoisPrecedentEl.textContent = caMoisPrecedent.toFixed(2);
             if (caMoisEnCoursEl) caMoisEnCoursEl.textContent = caMoisEnCours.toFixed(2);
             if (caAnneeAnterieureEl) caAnneeAnterieureEl.textContent = caAnneePrecedente.toFixed(2);
             if (caAnneeEnCoursEl) caAnneeEnCoursEl.textContent = caAnneeEnCours.toFixed(2);
         }
 
+        // Ouvre la modale d'édition des items de la facture
+        async function openInvoiceItemsModal(suiviId, devisNumber) {
+            const modal = document.getElementById('invoiceItemsModal');
+            if (!modal) return;
+
+            // Stocker l'ID pour les actions futures
+            modal.dataset.suiviId = suiviId;
+
+            // Mettre à jour le titre de la modale
+            const modalTitle = document.getElementById('invoiceItemsModalTitle');
+            modalTitle.textContent = `Édition des lignes du Devis #${devisNumber || 'N/A'}`;
+
+            const tbody = modal.querySelector('#invoiceItemsTable tbody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
+
+            // Afficher la modale
+            modal.style.display = 'block';
+            setTimeout(() => modal.classList.add('show'), 10);
+
+            try {
+                // Charger les tarifs et le suivi en parallèle
+                const [tarifsRes, suiviRes] = await Promise.all([
+                    fetch('/api/tarifs'),
+                    fetch(`/api/suivi/${suiviId}`)
+                ]);
+
+                if (!tarifsRes.ok || !suiviRes.ok) throw new Error("Erreur chargement données");
+
+                const tarifs = await tarifsRes.json();
+                const suivi = await suiviRes.json();
+
+                // Stocker les tarifs globalement pour l'usage dans addInvoiceItem
+                window.availableTarifs = tarifs;
+
+                tbody.innerHTML = '';
+
+                // Parser les items existants (format JSON dans id_tarifs)
+                let itemsMap = {};
+                try {
+                    if (suivi.id_tarifs && suivi.id_tarifs !== 'undefined') {
+                        // Gérer le cas où id_tarifs est déjà un objet ou une string
+                        itemsMap = typeof suivi.id_tarifs === 'string' ? JSON.parse(suivi.id_tarifs) : suivi.id_tarifs;
+                    }
+                } catch (e) {
+                    console.warn('Erreur parsing id_tarifs', e);
+                    itemsMap = {};
+                }
+
+                // Convertir la map en liste pour l'affichage
+                // Map format: { tarifId: { qtt: number, detail: string } }
+                let hasItems = false;
+                if (itemsMap && typeof itemsMap === 'object') {
+                    Object.entries(itemsMap).forEach(([tarifId, itemData]) => {
+                        const tarif = tarifs.find(t => t.id === tarifId);
+                        // Même si le tarif n'existe plus, on essaie d'afficher quelque chose si possible, ou on ignore les orphelins
+                        if (tarif) {
+                            addInvoiceItemRow(tbody, tarif, itemData.qtt || 1, itemData.detail || '');
+                            hasItems = true;
+                        }
+                    });
+                }
+
+                if (!hasItems) {
+                    // Si pas d'items, on peut laisser vide ou ajouter une ligne vide par défaut ?
+                    // Laissons vide pour l'instant.
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="color:red;text-align:center;">Erreur lors du chargement des données</td></tr>';
+            }
+        }
+
+        // Helper pour créer le select de tarifs
+        function createTarifSelect(selectedId = '') {
+            const select = document.createElement('select');
+            select.classList.add('form-input', 'tarif-select');
+            select.style.width = "100%";
+            select.innerHTML = '<option value="">-- Choisir un tarif --</option>';
+
+            if (window.availableTarifs) {
+                window.availableTarifs.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.id;
+                    // Format: "Libellé | Durée (min) | Montant (€)"
+                    const duration = t.timeByUnits || t.duree || '?';
+                    const amount = parseFloat(t.montant || 0).toFixed(2);
+                    option.textContent = `${t.libelle} | ${duration} min | ${amount} €`;
+                    if (t.id === selectedId) option.selected = true;
+                    // Stocker le prix dans data attribute pour accès facile
+                    option.dataset.price = amount;
+                    select.appendChild(option);
+                });
+            }
+
+            select.onchange = function () {
+                const row = this.closest('tr');
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.dataset.price || '0.00';
+                row.querySelector('.price-cell').textContent = price + ' €';
+            };
+
+            return select;
+        }
+
+        // Helper pour ajouter une ligne
+        function addInvoiceItemRow(tbody, tarif = null, qtt = 1, detail = '') {
+            const row = document.createElement('tr');
+
+            // Quantité
+            const qttCell = document.createElement('td');
+            qttCell.innerHTML = `<input type="number" class="form-input qtt-input" value="${qtt}" min="1" style="width: 36px;">`;
+
+            // Tarif
+            const tarifCell = document.createElement('td');
+            const select = createTarifSelect(tarif ? tarif.id : '');
+            tarifCell.appendChild(select);
+
+            // Détail
+            const detailCell = document.createElement('td');
+            detailCell.innerHTML = `<input type="text" class="form-input detail-input" value="${detail}" placeholder="Détail optionnel">`;
+
+            // Prix
+            const priceCell = document.createElement('td');
+            priceCell.className = 'price-cell';
+            priceCell.style.textAlign = 'right';
+            const price = tarif ? parseFloat(tarif.montant || 0).toFixed(2) : '0.00';
+            priceCell.textContent = price + ' €';
+
+            // Actions
+            const actionCell = document.createElement('td');
+            actionCell.style.textAlign = 'center';
+            actionCell.innerHTML = `
+                <button class="btn-icon" title="Supprimer la ligne" onclick="this.closest('tr').remove()">
+                    <svg viewBox="0 0 18 18"><path d="M6.5 3c0-.552.444-1 1-1h3c.552 0 1 .444 1 1H15v2H3V3h3.5zM4 6h10v8c0 1.105-.887 2-2 2H6c-1.105 0-2-.887-2-2V6z" fill-rule="evenodd"></path></svg>
+                </button>
+            `;
+
+            row.appendChild(qttCell);
+            row.appendChild(tarifCell);
+            row.appendChild(detailCell);
+            row.appendChild(priceCell);
+            row.appendChild(actionCell);
+
+            tbody.appendChild(row);
+        }
+
+        // Ferme la modale d'édition
+        function closeInvoiceItemsModal() {
+            const modal = document.getElementById('invoiceItemsModal');
+            if (modal) {
+                modal.classList.remove('show');
+                // Attendre la fin de la transition pour cacher
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+
+        // Ajoute un item dans la modale (appelé par le bouton)
+        function addInvoiceItem() {
+            const tbody = document.querySelector('#invoiceItemsTable tbody');
+            addInvoiceItemRow(tbody);
+        }
+
+        // Sauvegarde les changements de la modale
+        async function saveInvoiceItems() {
+            const modal = document.getElementById('invoiceItemsModal');
+            const suiviId = modal.dataset.suiviId;
+            const tbody = modal.querySelector('#invoiceItemsTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+
+            const itemsMap = {};
+
+            rows.forEach(row => {
+                const select = row.querySelector('.tarif-select');
+                // Ignorer les lignes de chargement ou d'erreur qui n'ont pas de select
+                if (!select) return;
+
+                const tarifId = select.value;
+                if (!tarifId) return; // Ignorer si pas de tarif sélectionné
+
+                const qtt = parseInt(row.querySelector('.qtt-input').value) || 0;
+                const detail = row.querySelector('.detail-input').value || '';
+
+                // Note: La structure actuelle clé=tarifId ne supporte pas plusieurs lignes du même tarif.
+                // Si l'utilisateur en met plusieurs, la dernière gagnera.
+                itemsMap[tarifId] = {
+                    qtt: qtt,
+                    detail: detail
+                };
+            });
+
+            console.log('Sauvegarde des items pour suivi ID:', suiviId, itemsMap);
+
+            try {
+                const response = await fetch(`/api/suivi/${suiviId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_tarifs: JSON.stringify(itemsMap)
+                    })
+                });
+
+                if (response.ok) {
+                    closeInvoiceItemsModal();
+                    // Recharger les données du tableau de suivi pour mettre à jour les colonnes si nécessaire
+                    if (typeof loadSuiviData === 'function') {
+                        loadSuiviData();
+                    }
+                } else {
+                    const err = await response.json();
+                    alert('Erreur lors de la sauvegarde: ' + (err.message || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error('Erreur sauvegarde:', error);
+                alert('Erreur de connexion lors de la sauvegarde');
+            }
+        }
+
         // Make showSection available globally
         window.showSection = showSection;
     </script>
 </head>
+
 <body>
-    <header><h1><span id="name"></span> (V<span id="version"></span>)</h1></header>
+    <header>
+        <h1><span id="name"></span> (V<span id="version"></span>)</h1>
+    </header>
     <nav>
         <div class="nav-spacer-left"></div>
-        <button id="navPropals" class="nav-btn active" hx-on:click="showSection('viewPropals')">Suivi d'activite</button>
+        <button id="navPropals" class="nav-btn active" hx-on:click="showSection('viewPropals')">Suivi
+            d'activite</button>
         <button id="navClients" class="nav-btn" hx-on:click="showSection('viewClients')">Clients</button>
         <button id="navTarifs" class="nav-btn" hx-on:click="showSection('viewTarifs')">Tarifs</button>
         <button id="navDashboard" class="nav-btn" hx-on:click="showSection('viewDashboard')">Tableau de Bord</button>
@@ -493,13 +747,22 @@
                             <circle cx="20" cy="20" r="16"></circle>
                         </clipPath>
                     </defs>
-                    <path d="M4.02,28.27C2.73,25.8,2,22.98,2,20c0-2.87,0.68-5.59,1.88-8l-1.72-1.04C0.78,13.67,0,16.75,0,20c0,3.31,0.8,6.43,2.23,9.18L4.02,28.27z" fill="#F6AD01"></path>
-                    <path d="M32.15,33.27C28.95,36.21,24.68,38,20,38c-6.95,0-12.98-3.95-15.99-9.73l-1.79,0.91C5.55,35.61,12.26,40,20,40c5.2,0,9.93-1.98,13.48-5.23L32.15,33.27z" fill="#249A41"></path>
-                    <path d="M33.49,34.77C37.49,31.12,40,25.85,40,20c0-5.86-2.52-11.13-6.54-14.79l-1.37,1.46C35.72,9.97,38,14.72,38,20c0,5.25-2.26,9.98-5.85,13.27L33.49,34.77z" fill="#3174F1"></path>
-                    <path d="M20,2c4.65,0,8.89,1.77,12.09,4.67l1.37-1.46C29.91,1.97,25.19,0,20,0l0,0C12.21,0,5.46,4.46,2.16,10.96L3.88,12C6.83,6.08,12.95,2,20,2" fill="#E92D18"></path>
-                    <image id="svgInnerImage" class="brightness" href="img/google_disconnected.png" x="4" y="4" height="32" width="32" clip-path="url(#avatar-clip-path)"></image>
+                    <path
+                        d="M4.02,28.27C2.73,25.8,2,22.98,2,20c0-2.87,0.68-5.59,1.88-8l-1.72-1.04C0.78,13.67,0,16.75,0,20c0,3.31,0.8,6.43,2.23,9.18L4.02,28.27z"
+                        fill="#F6AD01"></path>
+                    <path
+                        d="M32.15,33.27C28.95,36.21,24.68,38,20,38c-6.95,0-12.98-3.95-15.99-9.73l-1.79,0.91C5.55,35.61,12.26,40,20,40c5.2,0,9.93-1.98,13.48-5.23L32.15,33.27z"
+                        fill="#249A41"></path>
+                    <path
+                        d="M33.49,34.77C37.49,31.12,40,25.85,40,20c0-5.86-2.52-11.13-6.54-14.79l-1.37,1.46C35.72,9.97,38,14.72,38,20c0,5.25-2.26,9.98-5.85,13.27L33.49,34.77z"
+                        fill="#3174F1"></path>
+                    <path
+                        d="M20,2c4.65,0,8.89,1.77,12.09,4.67l1.37-1.46C29.91,1.97,25.19,0,20,0l0,0C12.21,0,5.46,4.46,2.16,10.96L3.88,12C6.83,6.08,12.95,2,20,2"
+                        fill="#E92D18"></path>
+                    <image id="svgInnerImage" class="brightness" href="img/google_disconnected.png" x="4" y="4"
+                        height="32" width="32" clip-path="url(#avatar-clip-path)"></image>
                 </svg>
-                
+
                 <div id="userProfileDropdown" class="user-profile-dropdown hidden">
                     <div class="dropdown-user-info">
                         <span id="dropdownUserName" class="dropdown-user-name"></span>
@@ -510,7 +773,8 @@
                 </div>
             </div>
         </div>
-        <img id="fullscreenToggleBtn" class="brightness" src="img/expand.svg" alt="fullScreen" style="height: 1.3em; vertical-align: middle;">
+        <img id="fullscreenToggleBtn" class="brightness" src="img/expand.svg" alt="fullScreen"
+            style="height: 1.3em; vertical-align: middle;">
     </nav>
     <div id="dataStatusBar">
         <span id="currentDataFolder">Mode : DEMO</span>
@@ -519,28 +783,52 @@
         <section id="viewPropals" class="view active">
             <div class="section-header">
                 <h2>Suivi d'activite</h2>
-                <button id="btnAddPropal" class="btn btn-primary" hx-on:click="toggleForm('PropalFormContainer')">Ajouter un Devis</button>
+                <button id="btnAddPropal" class="btn btn-primary"
+                    hx-on:click="toggleForm('PropalFormContainer')">Ajouter un Devis</button>
             </div>
             <div id="PropalFormContainer" class="form-container hidden">
                 <form id="PropalForm" class="form-grid compact">
                     <input type="hidden" id="PropalId">
                     <div class="form-group">
-                        <label for="PropalClientIdInput">Client*</label><input type="hidden" id="PropalClientIdInput" name="id_client"><select id="PropalClientSelect" name="id_client" required><option value="">Sélectionner</option></select></div>
+                        <label for="PropalClientIdInput">Client*</label><input type="hidden" id="PropalClientIdInput"
+                            name="id_client"><select id="PropalClientSelect" name="id_client" required>
+                            <option value="">Sélectionner</option>
+                        </select>
+                    </div>
                     <div class="form-group">
-                        <label for="PropalDate">Date*</label><input type="datetime-local" id="PropalDate" name="date_heure" required></div>
+                        <label for="PropalDate">Date*</label><input type="datetime-local" id="PropalDate"
+                            name="date_heure" required>
+                    </div>
                     <div class="form-group">
-                        <label for="PropalTarif">Tarif*</label><select id="PropalTarif" name="id_tarifs" required><option value="">Sélectionner</option></select></div>
+                        <label for="PropalTarif">Tarif*</label><select id="PropalTarif" name="id_tarifs" required>
+                            <option value="">Sélectionner</option>
+                        </select>
+                    </div>
                     <div class="form-group">
-                        <label for="PropalMontant">Montant (€)</label><input type="number" id="PropalMontant" name="montant" step="0.01"></div>
+                        <label for="PropalMontant">Montant (€)</label><input type="number" id="PropalMontant"
+                            name="montant" step="0.01">
+                    </div>
                     <div class="form-group">
-                        <label for="PropalStatut">Statut*</label><select id="PropalStatut" name="statut" required><option value="APAYER">À Payer</option><option value="PAYEE">Payée</option><option value="ANNULEE">Annulée</option><option value="PLANIFIEE">Planifiée</option></select></div>
+                        <label for="PropalStatut">Statut*</label><select id="PropalStatut" name="statut" required>
+                            <option value="APAYER">À Payer</option>
+                            <option value="PAYEE">Payée</option>
+                            <option value="ANNULEE">Annulée</option>
+                            <option value="PLANIFIEE">Planifiée</option>
+                        </select>
+                    </div>
                     <div class="form-group">
-                        <label for="PropalModePaiement">Mode Paiement</label><input type="text" id="PropalModePaiement" name="mode_paiement"></div>
+                        <label for="PropalModePaiement">Mode Paiement</label><input type="text" id="PropalModePaiement"
+                            name="mode_paiement">
+                    </div>
                     <div class="form-group">
-                        <label for="PropalDatePaiement">Date Paiement</label><input type="date" id="PropalDatePaiement" name="date_paiement"></div>
+                        <label for="PropalDatePaiement">Date Paiement</label><input type="date" id="PropalDatePaiement"
+                            name="date_paiement">
+                    </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-success" hx-post="/api/suivi" hx-target="#viewPropals" hx-swap="innerHTML swap:1s">Enregistrer</button>
-                        <button type="button" class="btn btn-secondary" onclick="toggleForm('PropalFormContainer')">Annuler</button>
+                        <button type="submit" class="btn btn-success" hx-post="/api/suivi" hx-target="#viewPropals"
+                            hx-swap="innerHTML swap:1s">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="toggleForm('PropalFormContainer')">Annuler</button>
                     </div>
                 </form>
             </div>
@@ -570,7 +858,7 @@
                             <th class="date_heure">Date</th>
                             <th class="duree">Duree</th>
                             <th class="id_client">Client</th>
-                            <th class="id_tarifs">details</th>
+                            <th class="id_tarifs">Détails</th>
                             <th class="montant">Montant</th>
                             <th class="statut">Statut</th>
                             <th class="mode_paiement">Mode Paiement</th>
@@ -587,34 +875,50 @@
         <section id="viewClients" class="view">
             <div class="section-header">
                 <h2>Gestion des Clients</h2>
-                <button id="btnAddClient" class="btn btn-primary" hx-on:click="toggleForm('clientFormContainer')">Ajouter un Client</button>
+                <button id="btnAddClient" class="btn btn-primary"
+                    hx-on:click="toggleForm('clientFormContainer')">Ajouter un Client</button>
             </div>
             <div id="clientFormContainer" class="form-container hidden">
                 <form id="clientForm" class="form-grid compact">
                     <input type="hidden" id="clientId">
                     <div class="form-group">
-                        <label for="clientNom">Nom*</label><input type="text" id="clientNom" name="nom" required></div>
+                        <label for="clientNom">Nom*</label><input type="text" id="clientNom" name="nom" required>
+                    </div>
                     <div class="form-group">
-                        <label for="clientPrenom">Prénom*</label><input type="text" id="clientPrenom" name="prenom" required></div>
+                        <label for="clientPrenom">Prénom*</label><input type="text" id="clientPrenom" name="prenom"
+                            required>
+                    </div>
                     <div class="form-group">
-                        <label for="clientTelephone">Téléphone</label><input type="tel" id="clientTelephone" name="telephone" pattern="[0-9]{10}" title="Le numéro de téléphone doit contenir 10 chiffres."></div>
+                        <label for="clientTelephone">Téléphone</label><input type="tel" id="clientTelephone"
+                            name="telephone" pattern="[0-9]{10}"
+                            title="Le numéro de téléphone doit contenir 10 chiffres.">
+                    </div>
                     <div class="form-group">
-                        <label for="clientEmail">Email</label><input type="email" id="clientEmail" name="email"></div>
+                        <label for="clientEmail">Email</label><input type="email" id="clientEmail" name="email">
+                    </div>
                     <div class="form-group">
-                        <label for="clientAdresse">Adresse</label><input type="text" id="clientAdresse" name="adresse"></div>
+                        <label for="clientAdresse">Adresse</label><input type="text" id="clientAdresse" name="adresse">
+                    </div>
                     <div class="form-group">
-                        <label for="clientVille">Ville</label><input type="text" id="clientVille" name="ville"></div>
+                        <label for="clientVille">Ville</label><input type="text" id="clientVille" name="ville">
+                    </div>
                     <div class="form-group">
-                        <label for="clientDistance">Distance (km)</label><input type="number" id="clientDistance" name="distance" min="0" step="any"></div>
+                        <label for="clientDistance">Distance (km)</label><input type="number" id="clientDistance"
+                            name="distance" min="0" step="any">
+                    </div>
                     <div class="form-group form-row">
-                        <label for="clientNotes">Notes :</label><textarea id="clientNotes" name="notes" rows="2"></textarea></div>
+                        <label for="clientNotes">Notes :</label><textarea id="clientNotes" name="notes"
+                            rows="2"></textarea>
+                    </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-success" hx-post="/api/clients" hx-target="#viewClients" hx-swap="innerHTML swap:1s">Enregistrer</button>
-                        <button type="button" class="btn btn-secondary" onclick="toggleForm('clientFormContainer')">Annuler</button>
+                        <button type="submit" class="btn btn-success" hx-post="/api/clients" hx-target="#viewClients"
+                            hx-swap="innerHTML swap:1s">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="toggleForm('clientFormContainer')">Annuler</button>
                     </div>
                 </form>
             </div>
-            
+
             <div class="filters">
                 <input type="text" id="searchClientInput" placeholder="Rechercher par nom/prénom...">
                 <select id="filterClientStatut">
@@ -650,38 +954,58 @@
         <section id="viewTarifs" class="view">
             <div class="section-header">
                 <h2>Gestion des Tarifs</h2>
-                <button id="btnAddTarif" class="btn btn-primary" hx-on:click="toggleForm('tarifFormContainer')">Ajouter un Tarif</button>
+                <button id="btnAddTarif" class="btn btn-primary" hx-on:click="toggleForm('tarifFormContainer')">Ajouter
+                    un Tarif</button>
             </div>
             <div id="tarifFormContainer" class="form-container hidden">
                 <form id="tarifForm" class="form-grid compact">
                     <input type="hidden" id="tarifId">
                     <div class="form-group">
                         <label for="tarifLibelle">Libellé*</label>
-                        <input type="text" id="tarifLibelle" name="libelle" required></div>
+                        <input type="text" id="tarifLibelle" name="libelle" required>
+                    </div>
                     <div class="form-group">
                         <label for="tarifMontant">Montant (€)*</label>
-                        <input type="number" id="tarifMontant" name="montant" step="0.01" min="0" required></div>
+                        <input type="number" id="tarifMontant" name="montant" step="0.01" min="0" required>
+                    </div>
                     <div class="form-group">
                         <label for="tarifUnit">Unité</label>
-                        <input type="text" id="tarifUnit" name="Unit" placeholder="l'une, km, heure..."></div>
+                        <input type="text" id="tarifUnit" name="Unit" placeholder="l'une, km, heure...">
+                    </div>
                     <div class="form-group">
                         <label for="tarifType">Type</label>
-                        <select id="tarifType" name="type"><option value="Presta-BNC">Presta-BNC</option><option value="Presta-BIC">Presta-BIC</option><option value="Vente-BIC">Vente-BIC</option></select></div>
+                        <select id="tarifType" name="type">
+                            <option value="Presta-BNC">Presta-BNC</option>
+                            <option value="Presta-BIC">Presta-BIC</option>
+                            <option value="Vente-BIC">Vente-BIC</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="tarifTimeByUnits">Temps/Unité</label>
-                        <input type="text" id="tarifTimeByUnits" name="timeByUnits" placeholder="02:30"></div>
+                        <input type="text" id="tarifTimeByUnits" name="timeByUnits" placeholder="02:30">
+                    </div>
                     <div class="form-group">
                         <label for="tarifComment">Commentaire</label>
-                        <input type="text" id="tarifComment" name="Comment"></div>
+                        <input type="text" id="tarifComment" name="Comment">
+                    </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-success" hx-post="/api/tarifs" hx-target="#viewTarifs" hx-swap="innerHTML swap:1s">Enregistrer</button>
-                        <button type="button" class="btn btn-secondary" onclick="toggleForm('tarifFormContainer')">Annuler</button>
+                        <button type="submit" class="btn btn-success" hx-post="/api/tarifs" hx-target="#viewTarifs"
+                            hx-swap="innerHTML swap:1s">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="toggleForm('tarifFormContainer')">Annuler</button>
                     </div>
                 </form>
             </div>
             <div class="table-container">
                 <table id="tarifsTable">
-                    <thead><tr><th>Libellé</th><th>Durée (min)</th><th>Montant (€)</th><th class="actions-cell">Actions</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Libellé</th>
+                            <th>Durée (min)</th>
+                            <th>Montant (€)</th>
+                            <th class="actions-cell">Actions</th>
+                        </tr>
+                    </thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -690,7 +1014,8 @@
         <section id="viewDashboard" class="view">
             <div class="section-header">
                 <h2>Tableau de Bord</h2>
-                <img id="exportToSheetsBtn" src="./img/google_spreadsheet.png" class="sheets-icon" alt="Exporter vers Google Sheets" title="Exporter vers Google Sheets">
+                <img id="exportToSheetsBtn" src="./img/google_spreadsheet.png" class="sheets-icon"
+                    alt="Exporter vers Google Sheets" title="Exporter vers Google Sheets">
             </div>
             <div class="dashboard-row" style="display: flex; gap: 1.2rem; flex-wrap: wrap;">
                 <div class="form-container" style="flex:1 1 110px; min-width:110px;">
@@ -715,7 +1040,8 @@
                 <h3>Évolution d'activite</h3>
                 <div class="chart-controls" style="margin-bottom: 1rem;">
                     <label for="chartPeriodSelector">Agréger par :</label>
-                    <select id="chartPeriodSelector" class="form-input" style="display: inline-block; width: auto; padding: 0.375rem 0.75rem;">
+                    <select id="chartPeriodSelector" class="form-input"
+                        style="display: inline-block; width: auto; padding: 0.375rem 0.75rem;">
                         <option value="day">Jour</option>
                         <option value="week">Semaine</option>
                         <option value="month" selected>Mois</option>
@@ -727,7 +1053,7 @@
                     <p style="text-align:center; color:#666;">Chargement du graphique...</p>
                 </div>
             </div>
-            </section>
+        </section>
 
         <section id="viewConfig" class="view">
             <h2>Configuration de l'Application</h2>
@@ -735,53 +1061,78 @@
                 <h3>Informations du Gestionnaire</h3>
                 <div class="form-grid config-grid">
                     <div class="form-group">
-                        <label for="configManagerName">Nom du gestionnaire/cabinet :</label><input type="text" id="configManagerName"></div>
+                        <label for="configManagerName">Nom du gestionnaire/cabinet :</label><input type="text"
+                            id="configManagerName">
+                    </div>
                     <div class="form-group">
-                        <label for="configManagerTitle">Titre/Profession :</label><input type="text" id="configManagerTitle"></div>
+                        <label for="configManagerTitle">Titre/Profession :</label><input type="text"
+                            id="configManagerTitle">
+                    </div>
                     <div class="form-group form-row">
-                        <label for="configManagerDescription">Description (activité) :</label><textarea id="configManagerDescription" rows="2"></textarea></div>
+                        <label for="configManagerDescription">Description (activité) :</label><textarea
+                            id="configManagerDescription" rows="2"></textarea>
+                    </div>
                     <div class="form-group">
-                        <label for="configManagerPhone">Téléphone :</label><input type="tel" id="configManagerPhone"></div>
+                        <label for="configManagerPhone">Téléphone :</label><input type="tel" id="configManagerPhone">
+                    </div>
                     <div class="form-group">
-                        <label for="configManagerEmailContact">Email de contact (affiché sur factures)</label><input type="email" id="configManagerEmailContact"></div>
+                        <label for="configManagerEmailContact">Email de contact (affiché sur factures)</label><input
+                            type="email" id="configManagerEmailContact">
+                    </div>
                     <div class="form-group form-row">
-                        <label for="configManagerAddress">Adresse :</label><input type="text" id="configManagerAddress"></div>
+                        <label for="configManagerAddress">Adresse :</label><input type="text" id="configManagerAddress">
+                    </div>
                     <div class="form-group">
-                        <label for="configManagerCity">Ville :</label><input type="text" id="configManagerCity"></div>
+                        <label for="configManagerCity">Ville :</label><input type="text" id="configManagerCity">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="configGoogleCalendarId">ID du Calendrier Google à utiliser :</label>
                     <input type="text" id="configGoogleCalendarId" placeholder="primary (pour le calendrier principal)">
-                    <small>Laissez "primary" pour utiliser le calendrier principal du compte Google connecté, ou spécifiez un ID de calendrier personnalisé.</small>
+                    <small>Laissez "primary" pour utiliser le calendrier principal du compte Google connecté, ou
+                        spécifiez un ID de calendrier personnalisé.</small>
                 </div>
                 <h3>Paramètres Financiers</h3>
                 <div class="form-grid config-grid">
                     <div class="form-group">
-                        <label for="configTva">Taux de TVA (%) :</label><input type="number" id="configTva" step="0.1" min="0"></div>
+                        <label for="configTva">Taux de TVA (%) :</label><input type="number" id="configTva" step="0.1"
+                            min="0">
+                    </div>
                 </div>
-                
+
                 <h3>Informations Légales</h3>
                 <div class="form-grid config-grid">
                     <div class="form-group">
-                        <label for="configSiret">SIRET :</label><input type="text" id="configSiret"></div>
+                        <label for="configSiret">SIRET :</label><input type="text" id="configSiret">
+                    </div>
                     <div class="form-group">
-                        <label for="configApe">Code APE :</label><input type="text" id="configApe"></div>
+                        <label for="configApe">Code APE :</label><input type="text" id="configApe">
+                    </div>
                     <div class="form-group">
-                        <label for="configAdeli">N° ADELI :</label><input type="text" id="configAdeli"></div>
+                        <label for="configAdeli">N° ADELI :</label><input type="text" id="configAdeli">
+                    </div>
                     <div class="form-group form-row">
-                        <label for="configIban">IBAN :</label><input type="text" id="configIban"></div>
+                        <label for="configIban">IBAN :</label><input type="text" id="configIban">
+                    </div>
                     <div class="form-group">
-                        <label for="configBic">BIC :</label><input type="text" id="configBic"></div>
+                        <label for="configBic">BIC :</label><input type="text" id="configBic">
+                    </div>
                 </div>
-                
+
                 <h3>Mentions pour Factures</h3>
-                 <div class="form-grid config-grid">
+                <div class="form-grid config-grid">
                     <div class="form-group form-row">
-                        <label for="configTvaMention">Mention TVA :</label><textarea id="configTvaMention" rows="2"></textarea></div>
+                        <label for="configTvaMention">Mention TVA :</label><textarea id="configTvaMention"
+                            rows="2"></textarea>
+                    </div>
                     <div class="form-group form-row">
-                        <label for="configPaymentTerms">Conditions de Paiement :</label><textarea id="configPaymentTerms" rows="3"></textarea></div>
+                        <label for="configPaymentTerms">Conditions de Paiement :</label><textarea
+                            id="configPaymentTerms" rows="3"></textarea>
+                    </div>
                     <div class="form-group form-row">
-                        <label for="configInsurance">Assurance RCP :</label><textarea id="configInsurance" rows="2"></textarea></div>
+                        <label for="configInsurance">Assurance RCP :</label><textarea id="configInsurance"
+                            rows="2"></textarea>
+                    </div>
                 </div>
 
                 <div class="form-actions" style="margin-top: 2rem;">
@@ -789,55 +1140,103 @@
                 </div>
 
                 <h3>Connexion Compte Google (pour Email & Calendrier & Sheets)</h3>
-                <div id="googleAuthStatusContainer" class="form-container" style="padding: 1rem; border: 1px solid #eee; margin-bottom:1.5rem;">
+                <div id="googleAuthStatusContainer" class="form-container"
+                    style="padding: 1rem; border: 1px solid #eee; margin-bottom:1.5rem;">
                     <p id="googleAuthStatusText">État de la connexion : Vérification...</p>
                     <div id="googleAuthScopes" style="font-size: 0.9em; margin-top: 0.5rem;"></div>
-                    <button type="button" id="btnConnectGoogle" class="btn btn-primary" style="margin-right: 10px;">Connecter mon compte Google</button>
-                    <button type="button" id="btnDisconnectGoogle" class="btn btn-danger" style="display:none;">Déconnecter mon compte Google</button>
+                    <button type="button" id="btnConnectGoogle" class="btn btn-primary"
+                        style="margin-right: 10px;">Connecter mon compte Google</button>
+                    <button type="button" id="btnDisconnectGoogle" class="btn btn-danger"
+                        style="display:none;">Déconnecter mon compte Google</button>
                 </div>
             </form>
         </section>
     </main>
 
-<footer class="footer">
-    <div class="footer-bottom" id="footer-bottom-info">
-        <p>
-            <span style="margin-right: 20px;"> &copy; 2025 QuickFact </span>
-            <a href="https://github.com/sctfic/" target="_blank" title="GitHub" style="text-decoration: none; color: inherit; margin-right: 4px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: text-top;">
-                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg>
-                V<b id="version"></b>Dev by <span style="margin-left: 20px;" id="author"></span>
-            </a>            
-            <a href="https://www.paypal.com/donate/?hosted_button_id=EQ9ALH8BUGS5S" target="_blank" title="Faire un don" style="text-decoration: none; color: #003087; background-color: #FFC439; margin-left: 10px; padding: 4px 12px; border-radius: 18px; display: inline-flex; align-items: center; gap: 6px; font-weight: bold; font-family: sans-serif; font-size: 0.9em; vertical-align: middle;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 48 48">
-                    <g clip-path="url(#paypal_clip)">
-                        <path fill="#002991" d="M38.914 13.35c0 5.574-5.144 12.15-12.927 12.15H18.49l-.368 2.322L16.373 39H7.056l5.605-36h15.095c5.083 0 9.082 2.833 10.555 6.77a9.687 9.687 0 0 1 .603 3.58z"/>
-                        <path fill="#60CDFF" d="M44.284 23.7A12.894 12.894 0 0 1 31.53 34.5h-5.206L24.157 48H14.89l1.483-9 1.75-11.178.367-2.322h7.497c7.773 0 12.927-6.576 12.927-12.15 3.825 1.974 6.055 5.963 5.37 10.35z"/>
-                        <path fill="#008CFF" d="M38.914 13.35C37.31 12.511 35.365 12 33.248 12h-12.64L18.49 25.5h7.497c7.773 0 12.927-6.576 12.927-12.15z"/>
-                    </g>
-                    <defs>
-                        <clipPath id="paypal_clip">
-                            <path fill="#fff" d="M7.056 3h37.35v45H7.056z"/>
-                        </clipPath>
-                    </defs>
-                </svg>
-                <span>Donate/Request</span>
-            </a>
-        </p>
-    </div>
-</footer>
+    <footer class="footer">
+        <div class="footer-bottom" id="footer-bottom-info">
+            <p>
+                <span style="margin-right: 20px;"> &copy; 2025 QuickFact </span>
+                <a href="https://github.com/sctfic/" target="_blank" title="GitHub"
+                    style="text-decoration: none; color: inherit; margin-right: 4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                        viewBox="0 0 16 16" style="vertical-align: text-top;">
+                        <path
+                            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+                    </svg>
+                    V<b id="version"></b>Dev by <span style="margin-left: 20px;" id="author"></span>
+                </a>
+                <a href="https://www.paypal.com/donate/?hosted_button_id=EQ9ALH8BUGS5S" target="_blank"
+                    title="Faire un don"
+                    style="text-decoration: none; color: #003087; background-color: #FFC439; margin-left: 10px; padding: 4px 12px; border-radius: 18px; display: inline-flex; align-items: center; gap: 6px; font-weight: bold; font-family: sans-serif; font-size: 0.9em; vertical-align: middle;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 48 48">
+                        <g clip-path="url(#paypal_clip)">
+                            <path fill="#002991"
+                                d="M38.914 13.35c0 5.574-5.144 12.15-12.927 12.15H18.49l-.368 2.322L16.373 39H7.056l5.605-36h15.095c5.083 0 9.082 2.833 10.555 6.77a9.687 9.687 0 0 1 .603 3.58z" />
+                            <path fill="#60CDFF"
+                                d="M44.284 23.7A12.894 12.894 0 0 1 31.53 34.5h-5.206L24.157 48H14.89l1.483-9 1.75-11.178.367-2.322h7.497c7.773 0 12.927-6.576 12.927-12.15 3.825 1.974 6.055 5.963 5.37 10.35z" />
+                            <path fill="#008CFF"
+                                d="M38.914 13.35C37.31 12.511 35.365 12 33.248 12h-12.64L18.49 25.5h7.497c7.773 0 12.927-6.576 12.927-12.15z" />
+                        </g>
+                        <defs>
+                            <clipPath id="paypal_clip">
+                                <path fill="#fff" d="M7.056 3h37.35v45H7.056z" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                    <span>Donate/Request</span>
+                </a>
+            </p>
+        </div>
+    </footer>
     <div id="deleteConfirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h4 id="deleteModalTitle">Confirmation</h4></div>
-            <div class="modal-body"><p id="deleteModalMessage">Êtes-vous sûr ?</p></div>
+            <div class="modal-header">
+                <h4 id="deleteModalTitle">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <p id="deleteModalMessage">Êtes-vous sûr ?</p>
+            </div>
             <div class="modal-footer">
                 <button id="confirmDeleteBtn" class="btn btn-danger" title="Supprimer !">Supprimer</button>
                 <button id="cancelDeleteBtn" class="btn btn-secondary">Annuler</button>
             </div>
         </div>
     </div>
-    
+
+    <div id="invoiceItemsModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <b id="invoiceItemsModalTitle">Édition des Lignes de la Facture</b>
+            </div>
+            <div class="modal-body">
+                <div class="table-container">
+                    <table id="invoiceItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width:8%">Qtt</th>
+                                <th style="width:60%">Détail</th>
+                                <th style="width:20%">Prix Unitaire</th>
+                                <th style="width:15%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les lignes d'items seront injectées ici -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-sm btn-primary" onclick="addInvoiceItem()">Ajouter une ligne</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveItemsBtn" class="btn btn-success" onclick="saveInvoiceItems()">Enregistrer les
+                    modifications</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // Toggle form visibility helper
         function toggleForm(formContainerId) {
@@ -851,4 +1250,5 @@
         window.toggleForm = toggleForm;
     </script>
 </body>
+
 </html>
