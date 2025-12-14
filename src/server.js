@@ -10,6 +10,7 @@ const clientRoutes = require('./routes/clients');
 const tarifRoutes = require('./routes/tarifs');
 const suiviRoutes = require('./routes/suivi');
 const appRoutes = require('./routes/app');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use(passport.session());
 app.use('/api/clients', clientRoutes);
 app.use('/api/tarifs', tarifRoutes);
 app.use('/api/suivi', suiviRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api', appRoutes); // Ce routeur gère maintenant /info et /settings
 
 // Route pour lister dynamiquement les points d'accès de l'API

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/components.css">
     <script src="js/d3.min.js"></script>
     <script src="js/plot.umd.js"></script>
+    <script src="js/workflow.js"></script>
     <style>
         /* Auto-hide header/footer with smooth transition */
         header {
@@ -218,7 +219,122 @@
                     }
                 });
             }
+
+            // OAuth2 Authentication
+            initializeOAuth2();
         });
+
+        // OAuth2 Functions
+        async function initializeOAuth2() {
+            const userProfileBtn = document.getElementById('userProfile');
+            const userProfileDropdown = document.getElementById('userProfileDropdown');
+            const disconnectBtn = document.getElementById('dropdownDisconnectBtn');
+
+            // Check if user is already authenticated
+            await updateUserProfile();
+
+            // Toggle dropdown on click
+            userProfileBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userProfileDropdown?.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#userProfileContainer')) {
+                    userProfileDropdown?.classList.add('hidden');
+                }
+            });
+
+            // Handle disconnect
+            disconnectBtn?.addEventListener('click', async () => {
+                try {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    await updateUserProfile();
+                    userProfileDropdown?.classList.add('hidden');
+                } catch (error) {
+                    console.error('Logout failed:', error);
+                }
+            });
+        }
+
+        async function updateUserProfile() {
+            try {
+                const response = await fetch('/api/auth/user');
+                const data = await response.json();
+
+                const svgImage = document.getElementById('svgInnerImage');
+                const dropdownUserName = document.getElementById('dropdownUserName');
+                const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+                const userProfileBtn = document.getElementById('userProfile');
+
+                if (data.authenticated && data.user) {
+                    // User is authenticated
+                    dropdownUserName.textContent = data.user.name || '';
+                    dropdownUserEmail.textContent = data.user.email || '';
+                    svgImage.href = data.user.picture || 'img/google_disconnected.png';
+
+                    // Remove click handler and add authenticated state
+                    userProfileBtn.style.cursor = 'pointer';
+                } else {
+                    // User is not authenticated - show login option
+                    dropdownUserName.textContent = 'Connexion requise';
+                    dropdownUserEmail.textContent = 'Cliquez pour vous connecter';
+                    svgImage.href = 'img/google_disconnected.png';
+
+                    // Add click to login
+                    const userProfileContainer = document.getElementById('userProfileContainer');
+                    const existingLoginBtn = document.getElementById('dropdownLoginBtn');
+                    if (!existingLoginBtn) {
+                        const loginBtn = document.createElement('button');
+                        loginBtn.id = 'dropdownLoginBtn';
+                        loginBtn.className = 'dropdown-button';
+                        loginBtn.textContent = 'Connexion Google';
+                        loginBtn.addEventListener('click', handleGoogleLogin);
+
+                        const dropdown = document.getElementById('userProfileDropdown');
+                        const hr = dropdown.querySelector('hr');
+                        if (hr) {
+                            dropdown.insertBefore(loginBtn, hr);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating user profile:', error);
+            }
+        }
+
+        async function handleGoogleLogin() {
+            try {
+                const response = await fetch('/api/auth/google');
+                const data = await response.json();
+
+                if (data.authUrl) {
+                    // Open Google OAuth consent screen in a popup
+                    const width = 500;
+                    const height = 600;
+                    const left = window.screenX + (window.outerWidth - width) / 2;
+                    const top = window.screenY + (window.outerHeight - height) / 2;
+
+                    const popup = window.open(
+                        data.authUrl,
+                        'googleAuth',
+                        `width=${width},height=${height},left=${left},top=${top}`
+                    );
+
+                    // Poll for authentication completion
+                    const checkAuth = setInterval(async () => {
+                        if (popup.closed) {
+                            clearInterval(checkAuth);
+                            // Check if user is authenticated
+                            await updateUserProfile();
+                        }
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Error initiating Google login:', error);
+            }
+        }
 
         // Load section data from API
         async function loadSectionData(sectionId) {
@@ -348,6 +464,21 @@
             }
         }
 
+        // Helper to map string status to numeric workflow ID
+        function mapStatusToId(status) {
+            if (!status) return 0;
+            const s = status.toUpperCase();
+            if (s.includes('BROUILLON')) return 0;
+            if (s.includes('ENVOY')) return 1;
+            if (s.includes('PERDU')) return 2;
+            if (s.includes('GAGN')) return 3;
+            if (s.includes('EFFECTU')) return 4;
+            if (s.includes('À PAYER') || s.includes('A PAYER')) return 6;
+            if (s.includes('RELANC')) return 7;
+            if (s.includes('PAY')) return 9;
+            return 0;
+        }
+
         // Populate suivi table
         function populateSuiviTable(data, tarifs = []) {
             const tbody = document.querySelector('#PropalsTable tbody');
@@ -385,6 +516,7 @@
                 const displayDuree = hasItems ? minutesToTime(totalDureeMins) : (item.duree || '');
                 const displayMontant = hasItems ? totalMontant.toFixed(2) : parseFloat(item.montant || 0).toFixed(2);
 
+                const workflowId = `workflow-${item.id}`;
                 row.innerHTML = `
                     <td class="id">${item.id}</td>
                     <td class="devis_number">${item.devis_number || ''}</td>
@@ -393,7 +525,7 @@
                     <td class="id_client">${item.client_name || item.id_client || ''}</td>
                     <td class="id_tarifs">[...]</td>
                     <td>${displayMontant} €</td>
-                    <td><span class="badge-${item.statut?.toLowerCase() || 'secondary'}">${item.statut || ''}</span></td>
+                    <td style="padding: 0; min-width: 290px;"><div id="${workflowId}" style="transform: scale(0.95); transform-origin: left center;"></div></td>
                     <td>${item.mode_paiement || ''}</td>
                     <td>${item.date_paiement || ''}</td>
                     <td>${item.invoice_number || ''}</td>
@@ -410,6 +542,83 @@
                     </td>
                 `;
                 tbody.appendChild(row);
+
+                // Initialize workflow visualization
+                const statusId = mapStatusToId(item.statut);
+                setTimeout(() => {
+                    if (typeof workflow === 'function') {
+                        // Determine relevant date for checks
+                        let comparisonDate = item.date_heure;
+                        // For payment check, we might want date_emission or date_echeance if available,
+                        // otherwise date_heure matches creation.
+                        // item.date_paiement is mostly for successful payment.
+                        // For 'Relancer', we check if we are waiting for payment too long.
+
+                        workflow(workflowId, statusId, {
+                            date: comparisonDate,
+                            onCheckboxChange: async (checked, s) => {
+                                console.log('Checkbox changed for', item.id, checked);
+
+                                let newStatusString = null;
+                                // Logique de transition d'état basée sur la case cochée
+                                if (checked) {
+                                    if (s === 1) newStatusString = 'GAGNEE';
+                                    else if (s === 6) newStatusString = 'PAYEE';
+                                    else if (s === 7) newStatusString = 'PAYEE';
+                                } else {
+                                    // Retour en arrière
+                                    if (s === 1) newStatusString = 'ENVOYEE'; // On décoche Gagné (depuis Gagné) ou Perdu?
+                                    else if (s === 6) newStatusString = 'A PAYER'; // On décoche Payée
+                                }
+
+                                if (newStatusString) {
+                                    try {
+                                        const response = await fetch(`/api/suivi/${item.id}`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ statut: newStatusString })
+                                        });
+
+                                        if (response.ok) {
+                                            // Recharger les données pour mettre à jour l'affichage
+                                            loadSuiviData();
+                                        } else {
+                                            console.error('Erreur mise à jour statut');
+                                        }
+                                    } catch (err) {
+                                        console.error('Erreur réseau mise à jour statut', err);
+                                    }
+                                }
+                            },
+                            onEmailClick: async (s) => {
+                                console.log('Email clicked for', item.id, s);
+                                let newStatusString = null;
+
+                                // Si étape 4 (Effectué) -> on envoie la facture -> devient À PAYER (6)
+                                if (s === 4) newStatusString = 'A PAYER';
+
+                                // Si étape 0 (Brouillon) -> on envoie le devis -> devient ENVOYEE (1)
+                                if (s === 0) newStatusString = 'ENVOYEE';
+
+                                // Si étape 7 (Relancer) -> on renvoie la facture -> reste À PAYER (6) ou spécifique
+                                if (s === 7) newStatusString = 'A PAYER';
+
+                                if (newStatusString) {
+                                    try {
+                                        const response = await fetch(`/api/suivi/${item.id}`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ statut: newStatusString })
+                                        });
+                                        if (response.ok) loadSuiviData();
+                                    } catch (err) {
+                                        console.error('Erreur réseau update statut email', err);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }, 0);
             });
         }
 
@@ -896,7 +1105,7 @@
         <button id="navConfig" class="nav-btn" hx-on:click="showSection('viewConfig')">Config</button>
         <div class="nav-spacer-right">
             <div id="userProfileContainer" class="user-profile-container">
-                <svg focusable="false" height="100%" viewBox="0 0 40 40" width="100%">
+                <svg id="userProfile" focusable="false" height="100%" viewBox="0 0 40 40" width="100%">
                     <defs>
                         <clipPath id="avatar-clip-path">
                             <circle cx="20" cy="20" r="16"></circle>
@@ -1014,7 +1223,7 @@
                         <tr>
                             <th class="id">id</th>
                             <th class="devis_number">#</th>
-                            <th class="date_heure">Date</th>
+                            <th class="date_heure">Intervention</th>
                             <th class="duree">Duree</th>
                             <th class="id_client">Client</th>
                             <th class="id_tarifs">Détails</th>
