@@ -3,7 +3,7 @@ const { parseTSV, writeTSV, generateUniqueId, getTSVFilePath } = require('../uti
 // Get all tarifs
 const getTarifs = async (req, res) => {
     try {
-        const filePath = getTSVFilePath('tarifs');
+        const filePath = getTSVFilePath('tarifs', req.username);
         const tarifs = parseTSV(filePath);
         res.status(200).json(tarifs);
     } catch (error) {
@@ -15,7 +15,7 @@ const getTarifs = async (req, res) => {
 const getTarifById = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('tarifs');
+        const filePath = getTSVFilePath('tarifs', req.username);
         const tarifs = parseTSV(filePath);
         const tarif = tarifs.find(t => t.id === id);
 
@@ -31,7 +31,7 @@ const getTarifById = async (req, res) => {
 // Create a new tarif
 const createTarif = async (req, res) => {
     try {
-        const filePath = getTSVFilePath('tarifs');
+        const filePath = getTSVFilePath('tarifs', req.username);
         const tarifs = parseTSV(filePath);
 
         const newTarif = {
@@ -42,7 +42,7 @@ const createTarif = async (req, res) => {
         tarifs.push(newTarif);
         writeTSV(filePath, tarifs);
 
-        res.status(201).json(tarif);
+        res.status(201).json(newTarif);
     } catch (error) {
         res.status(400).json({ message: 'Error creating tarif', error });
     }
@@ -52,7 +52,7 @@ const createTarif = async (req, res) => {
 const updateTarif = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('tarifs');
+        const filePath = getTSVFilePath('tarifs', req.username);
         const tarifs = parseTSV(filePath);
 
         const tarifIndex = tarifs.findIndex(t => t.id === id);
@@ -78,7 +78,7 @@ const updateTarif = async (req, res) => {
 const deleteTarif = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('tarifs');
+        const filePath = getTSVFilePath('tarifs', req.username);
         const tarifs = parseTSV(filePath);
 
         const tarifIndex = tarifs.findIndex(t => t.id === id);

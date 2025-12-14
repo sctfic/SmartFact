@@ -9,7 +9,8 @@ const path = require('path');
 const clientRoutes = require('./routes/clients');
 const tarifRoutes = require('./routes/tarifs');
 const suiviRoutes = require('./routes/suivi');
-const appRoutes = require('./routes/app');
+const settingsRoutes = require('./routes/settings');
+// const appRoutes = require('./routes/app');
 const authRoutes = require('./routes/auth');
 
 const app = express();
@@ -27,12 +28,19 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware to attach username from session to request
+app.use((req, res, next) => {
+    req.username = req.session?.user?.username || '_demo';
+    next();
+});
+
 // Routes
 app.use('/api/clients', clientRoutes);
 app.use('/api/tarifs', tarifRoutes);
 app.use('/api/suivi', suiviRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api', appRoutes); // Ce routeur gère maintenant /info et /settings
+app.use('/api', settingsRoutes); // Settings routes with username support
+// app.use('/api', appRoutes); // Fallback routes
 
 // Route pour lister dynamiquement les points d'accès de l'API
 app.get('/api', (req, res) => {

@@ -1,5 +1,7 @@
 const { Router } = require('express');
-const { parseTSV, writeTSV, getTSVFilePath } = require('../utils');
+const fs = require('fs');
+const path = require('path');
+const { getSettingsPath } = require('../utils');
 
 const router = Router();
 
@@ -8,9 +10,12 @@ const getInfo = async (req, res) => {
     try {
         const packageJson = require('../../package.json');
         res.json({
-            name: 'SmartFact',
-            version: packageJson.version || '1.0.0',
-            description: packageJson.description || 'Application de gestion des devis et factures'
+             author:packageJson.author,
+             version:packageJson.version,
+             license:packageJson.license,
+             name:packageJson.name,
+             description:packageJson.description,
+             "username": req.username
         });
     } catch (error) {
         res.status(500).json({ message: 'Error loading info', error });
@@ -20,8 +25,10 @@ const getInfo = async (req, res) => {
 // Get settings
 const getSettings = async (req, res) => {
     try {
-        // Try to load settings from a config file or return defaults
-        const settings = {
+        const settingsPath = getSettingsPath(req.username);
+        
+        // Default settings
+        const defaultSettings = {
             managerName: 'Gestionnaire',
             managerTitle: 'Profession',
             managerPhone: '',
@@ -38,7 +45,20 @@ const getSettings = async (req, res) => {
             paymentTerms: '',
             insurance: ''
         };
-        res.json(settings);
+
+        // Try to load user-specific or demo settings file
+        if (fs.existsSync(settingsPath)) {
+            try {
+                const fileContent = fs.readFileSync(settingsPath, 'utf-8');
+                const userSettings = JSON.parse(fileContent);
+                res.json({ ...defaultSettings, ...userSettings });
+                return;
+            } catch (err) {
+                console.error('Error parsing settings file:', err);
+            }
+        }
+
+        res.json(defaultSettings);
     } catch (error) {
         res.status(500).json({ message: 'Error loading settings', error });
     }
@@ -47,7 +67,17 @@ const getSettings = async (req, res) => {
 // Save settings
 const saveSettings = async (req, res) => {
     try {
-        // Here you would save settings to a file or database
+        const settingsPath = getSettingsPath(req.username);
+        const settingsDir = path.dirname(settingsPath);
+
+        // Create directory if it doesn't exist
+        if (!fs.existsSync(settingsDir)) {
+            fs.mkdirSync(settingsDir, { recursive: true });
+        }
+
+        // Save settings to file
+        fs.writeFileSync(settingsPath, JSON.stringify(req.body, null, 2), 'utf-8');
+        
         res.json({ message: 'Settings saved successfully', data: req.body });
     } catch (error) {
         res.status(500).json({ message: 'Error saving settings', error });

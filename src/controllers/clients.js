@@ -3,7 +3,7 @@ const { parseTSV, writeTSV, generateUniqueId, getTSVFilePath } = require('../uti
 // Get all clients
 const getClients = async (req, res) => {
     try {
-        const filePath = getTSVFilePath('clients');
+        const filePath = getTSVFilePath('clients', req.username);
         const clients = parseTSV(filePath);
         res.status(200).json(clients);
     } catch (error) {
@@ -15,7 +15,7 @@ const getClients = async (req, res) => {
 const getClientById = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('clients');
+        const filePath = getTSVFilePath('clients', req.username);
         const clients = parseTSV(filePath);
         const client = clients.find(c => c.id === id);
 
@@ -31,7 +31,7 @@ const getClientById = async (req, res) => {
 // Create a new client
 const createClient = async (req, res) => {
     try {
-        const filePath = getTSVFilePath('clients');
+        const filePath = getTSVFilePath('clients', req.username);
         const clients = parseTSV(filePath);
 
         const newClient = {
@@ -44,7 +44,7 @@ const createClient = async (req, res) => {
         clients.push(newClient);
         writeTSV(filePath, clients);
 
-        res.status(201).json(Client);
+        res.status(201).json(newClient);
     } catch (error) {
         res.status(400).json({ message: 'Error creating client', error });
     }
@@ -54,7 +54,7 @@ const createClient = async (req, res) => {
 const updateClient = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('clients');
+        const filePath = getTSVFilePath('clients', req.username);
         const clients = parseTSV(filePath);
 
         const clientIndex = clients.findIndex(c => c.id === id);
@@ -81,7 +81,7 @@ const updateClient = async (req, res) => {
 const deleteClient = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('clients');
+        const filePath = getTSVFilePath('clients', req.username);
         const clients = parseTSV(filePath);
 
         const clientIndex = clients.findIndex(c => c.id === id);

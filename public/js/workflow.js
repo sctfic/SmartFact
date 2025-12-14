@@ -5,7 +5,7 @@ function workflow(id, status, options = {}) {
         { id: 1, label: 'Envoyé', short: 'EN', hasEmail: false, hasCheckbox: true }, // Checkbox -> Gagné
         { id: 3, label: 'Gagné', short: 'GA', hasEmail: false, hasCheckbox: false },
         { id: 4, label: 'Effectué', short: 'EF', hasEmail: true, hasCheckbox: false },
-        { id: 6, label: 'À Payer', short: 'AP', hasEmail: true, hasCheckbox: true }, // Checkbox -> Payée
+        { id: 6, label: 'À Payer', short: 'AP', hasEmail: false, hasCheckbox: true }, // Checkbox -> Payée
         { id: 9, label: 'Payée', short: 'OK', hasEmail: false, hasCheckbox: false }
     ];
 
@@ -44,18 +44,19 @@ function workflow(id, status, options = {}) {
         currentSteps = currentSteps.map(s =>
             s.id === 3 ? { id: 2, label: 'Perdu', short: 'XX', hasEmail: false, hasCheckbox: false } : s
         );
-    } else if (effectiveStatus === 7) {
+    } else if (effectiveStatus === 7) {  // si on est "Relancer" (7), on affiche "Relancer!" (7)
         currentSteps = currentSteps.map(s =>
             s.id === 6 ? { id: 7, label: 'Relancer!', short: 'RL', hasEmail: false, hasCheckbox: true } : s
         );
     }
 
     // Fix: Si on est "Payée" (9), l'étape précédente "À Payer" (6) ne doit pas afficher d'email (pour éviter le flash)
-    if (status === 9) {
-        currentSteps = currentSteps.map(s =>
-            s.id === 6 ? { ...s, hasEmail: false } : s
-        );
-    }
+    // if (status === 9) {
+    //     console.log('Payée', currentSteps);
+    //     currentSteps = currentSteps.map(s =>
+    //         s.id === 6 ? { ...s, hasEmail: false } : s
+    //     );
+    // }
 
     // Déterminer l'index de l'étape actuelle
     const currentIndex = currentSteps.findIndex(s => s.id === effectiveStatus);

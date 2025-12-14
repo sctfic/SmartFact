@@ -9,6 +9,39 @@ const router = Router();
 const oauth2Config = JSON.parse(fs.readFileSync(path.join(__dirname, '../../Oauth2.json'), 'utf8'));
 const { client_id, client_secret, redirect_uris } = oauth2Config.web;
 
+// Function to initialize user directories
+const initializeUserDirectories = (username) => {
+    const datasDir = path.join(__dirname, '../../datas');
+    const userDir = path.join(datasDir, username);
+    const devisDir = path.join(userDir, 'Devis');
+    const facturesDir = path.join(userDir, 'Factures');
+
+    try {
+        // Create main user directory
+        if (!fs.existsSync(userDir)) {
+            fs.mkdirSync(userDir, { recursive: true });
+            console.log(`Created user directory: ${userDir}`);
+        }
+
+        // Create Devis subdirectory
+        if (!fs.existsSync(devisDir)) {
+            fs.mkdirSync(devisDir, { recursive: true });
+            console.log(`Created Devis directory: ${devisDir}`);
+        }
+
+        // Create Factures subdirectory
+        if (!fs.existsSync(facturesDir)) {
+            fs.mkdirSync(facturesDir, { recursive: true });
+            console.log(`Created Factures directory: ${facturesDir}`);
+        }
+
+        return userDir;
+    } catch (error) {
+        console.error('Error initializing user directories:', error);
+        throw error;
+    }
+};
+
 // Determine redirect URI based on environment
 const getRedirectUri = (req) => {
     const protocol = req.protocol || 'http';
@@ -66,10 +99,17 @@ router.get('/google/callback', async (req, res) => {
         const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
         const userInfo = await oauth2.userinfo.get();
 
+        // Extract username from email (before @)
+        const username = userInfo.data.email.split('@')[0];
+
+        // Initialize user directories
+        initializeUserDirectories(username);
+
         // Store tokens and user info in session
         req.session.tokens = tokens;
         req.session.user = {
             id: userInfo.data.id,
+            username: username,
             name: userInfo.data.name,
             email: userInfo.data.email,
             picture: userInfo.data.picture

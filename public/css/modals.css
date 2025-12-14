@@ -123,3 +123,12 @@
     width: 18px;
     height: 18px;
 }
+
+/* Hidden class for modals */
+.modal.hidden {
+    display: none !important;
+}
+
+.hidden {
+    display: none !important;
+}

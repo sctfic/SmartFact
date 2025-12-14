@@ -3,11 +3,11 @@ const { parseTSV, writeTSV, generateUniqueId, getTSVFilePath } = require('../uti
 // Get all suivi
 const getSuivi = async (req, res) => {
     try {
-        const filePath = getTSVFilePath('suivi');
+        const filePath = getTSVFilePath('suivi', req.username);
         const suivis = parseTSV(filePath);
 
         // Join with client names
-        const clientPath = getTSVFilePath('clients');
+        const clientPath = getTSVFilePath('clients', req.username);
         const clients = parseTSV(clientPath);
 
         const enrichedSuivis = suivis.map(s => {
@@ -28,7 +28,7 @@ const getSuivi = async (req, res) => {
 const getSuiviById = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('suivi');
+        const filePath = getTSVFilePath('suivi', req.username);
         const suivis = parseTSV(filePath);
         const suivi = suivis.find(s => s.id === id);
 
@@ -44,7 +44,7 @@ const getSuiviById = async (req, res) => {
 // Create a new suivi
 const createSuivi = async (req, res) => {
     try {
-        const filePath = getTSVFilePath('suivi');
+        const filePath = getTSVFilePath('suivi', req.username);
         const suivis = parseTSV(filePath);
 
         const newSuivi = {
@@ -56,7 +56,7 @@ const createSuivi = async (req, res) => {
         suivis.push(newSuivi);
         writeTSV(filePath, suivis);
 
-        res.status(201).json(suivis);
+        res.status(201).json(newSuivi);
     } catch (error) {
         res.status(400).json({ message: 'Error creating suivi', error });
     }
@@ -66,7 +66,7 @@ const createSuivi = async (req, res) => {
 const updateSuivi = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('suivi');
+        const filePath = getTSVFilePath('suivi', req.username);
         const suivis = parseTSV(filePath);
 
         const suiviIndex = suivis.findIndex(s => s.id === id);
@@ -92,7 +92,7 @@ const updateSuivi = async (req, res) => {
 const deleteSuivi = async (req, res) => {
     const { id } = req.params;
     try {
-        const filePath = getTSVFilePath('suivi');
+        const filePath = getTSVFilePath('suivi', req.username);
         const suivis = parseTSV(filePath);
 
         const suiviIndex = suivis.findIndex(s => s.id === id);
