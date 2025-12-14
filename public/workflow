@@ -1,0 +1,52 @@
+flowchart TD
+    A[Proposition commerciale] --> B[0-Brouillon]
+
+    B -- Bouton SendDevis cliqué --> C[1-Envoyé]
+
+    C -- Checkbox_Won = true --> D[3-Gagné]
+    C -- Date dépassée + Checkbox_Won = false --> E[2-Perdu<br><i>Ligne barrée figée</i>]
+
+    D -- Date passée --> F[4-Effectué]
+
+    F -- Bouton SendFacture cliqué --> G[6-À Payer]
+
+    G -- Checkbox_Payee = true --> H[9-Payée]
+    G -- 30+ jours sans paiement --> I[7-Relancer!<br><i>Action urgente</i>]
+    I -- Checkbox_Payee = true --> H
+
+    %% État figé
+    E -->|État terminal| E
+
+    %% Règles d'affichage détaillées
+    subgraph "Règles d'interface par état"
+        B_display[0-Brouillon:<br>• SendDevis visible]
+        C_display[1-Envoyé:<br>• Checkbox_Won visible<br>• SendDevis caché]
+        D_display[3-Gagné:<br>• Checkbox_Won=true<br>• SendDevis caché]
+        F_display[4-Effectué:<br>• SendFacture visible<br>• Checkbox_Won hidden]
+        G_display[6-À Payer:<br>• SendFacture visible<br>• Checkbox_Payee=false]
+        H_display[9-Payée:<br>• Liste modes paiement<br>• SendFacture caché]
+        I_display[7-Relancer:<br>• Interface spéciale<br>• Mise en évidence]
+        E_display[2-Perdu:<br>• Texte barré<br>• Éléments cachés]
+    end
+
+    %% Styles
+    classDef draft fill:
+#e3f2fd,stroke:
+#1565c0
+    classDef active fill:
+#e8f5e8,stroke:
+#2e7d32
+    classDef warning fill:
+#fff3cd,stroke:
+#f57c00
+    classDef lost fill:
+#ffebee,stroke:
+#c62828
+    classDef paid fill:
+#f3e5f5,stroke:
+#7b1fa2
+
+    class B draft
+    class C,D,F,G,I active
+    class E lost
+    class H paid

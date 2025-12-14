@@ -992,10 +992,14 @@
                 <input type="text" id="searchPropalClientInput" placeholder="Filtrer par nom client...">
                 <select id="filterPropalStatut">
                     <option value="">Tous les statuts</option>
-                    <option value="APAYER">À Payer</option>
-                    <option value="PAYEE">Payée</option>
-                    <option value="ANNULEE">Annulée</option>
-                    <option value="PLANIFIEE">Planifiée</option>
+                    <option value="0-Draft">Brouillon</option>
+                    <option value="1-Sent">Envoyé</option>
+                    <option value="2-Lost">Perdu</option>
+                    <option value="3-Won">Gagné</option>
+                    <option value="4-Effectue">Effectué</option>
+                    <option value="6-APAYER">À Payer</option>
+                    <option value="7-Relancer">Relancer!</option>
+                    <option value="9-PAYEE">Payée</option>
                 </select>
                 <label for="filterPropalDateStart">Du:</label>
                 <input type="date" id="filterPropalDateStart">
