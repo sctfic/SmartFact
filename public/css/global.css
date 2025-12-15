@@ -174,7 +174,9 @@ main.main-full-width {
 
 #viewPropals.active,
 #viewTarifs.active,
-#viewClients.active {
+#viewClients.active,
+#viewDashboard.active,
+#viewConfig.active {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     box-sizing: border-box;
@@ -313,4 +315,185 @@ h2 {
     stroke-width: 2.5;
     stroke-dasharray: 5, 3;
     pointer-events: none;
+}
+
+/* Sorting & Filtering Headers */
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 18px;
+    /* Space for arrow */
+}
+
+th.sortable:hover {
+    transition: background-color 0.2s;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+th.sort-asc::after {
+    content: "▲";
+    position: absolute;
+    right: 4px;
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+th.sort-desc::after {
+    content: "▼";
+    position: absolute;
+    right: 4px;
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.header-filters {
+    background-color: #f8f9fa;
+}
+
+.header-filters th {
+    padding: 6px 4px;
+    border-bottom: 2px solid #ddd;
+    vertical-align: top;
+}
+
+.column-filter {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.column-filter:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+}
+
+.column-filter:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+}
+
+/* New Header Layout */
+.th-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.th-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.filter-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 6px;
+    color: #6c757d;
+    transition: color 0.2s, background-color 0.2s;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.filter-trigger:hover {
+    color: #343a40;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.filter-popup {
+    position: absolute;
+    top: calc(100% - 2px);
+    right: 0;
+    width: 180px;
+    /* Slightly wider */
+    background: white;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    z-index: 1000;
+}
+
+/* Adjust sort icon positioning */
+th.sortable {
+    padding-right: 8px;
+    /* Reset previous padding */
+}
+
+th.sortable .sort-icon {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    font-size: 0.8em;
+    margin-left: 4px;
+}
+
+/* Move sort arrow to the explicit icon span */
+th.sortable::after {
+    display: none !important;
+}
+
+th.sort-asc .sort-icon::after {
+    content: "▲";
+    color: #007bff;
+}
+
+
+/* Inline Editing Styles - Prevent column expansion */
+.editing-row td {
+    padding: 2px 4px;
+    /* Reduced padding for editing mode */
+}
+
+.editing-row input.form-input,
+.editing-row select.form-input,
+.editing-row textarea.form-input {
+    width: 100%;
+    box-sizing: border-box;
+    /* Include padding/border in width */
+    min-width: 0;
+    margin: 0;
+    font-size: 0.9em;
+    /* Match table font size */
+    padding: 4px 6px;
+    height: auto;
+}
+
+/* Ensure generic form-input exists if not defined elsewhere */
+.form-input {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-input:disabled {
+    background-color: #e9ecef;
+    opacity: 1;
 }

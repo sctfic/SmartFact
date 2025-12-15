@@ -132,3 +132,31 @@
 .hidden {
     display: none !important;
 }
+
+/* Style for help tooltips */
+.help-icon {
+    display: inline-block;
+    margin-left: 5px;
+    font-weight: bold;
+    color: #0056b3;
+    cursor: help;
+    border: 1px solid #0056b3;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    line-height: 16px;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+/* Style for flashing required fields */
+.flash-error {
+    animation: flash-red 0.5s 3;
+}
+
+@keyframes flash-red {
+    0%, 100% { border-color: #ced4da; }
+    50% { border-color: #dc3545; box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); }
+}
+}

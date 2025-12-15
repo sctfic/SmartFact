@@ -1,4 +1,5 @@
 function workflow(id, status, options = {}) {
+    console.log('workflow', id, status);
     // Configuration des étapes du workflow avec icônes
     const steps = [
         { id: 0, label: 'Brouillon', short: 'BR', hasEmail: true, hasCheckbox: false },
