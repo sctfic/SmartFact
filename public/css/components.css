@@ -170,8 +170,8 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    width: 42px;
-    height: 42px;
+    /* width: 42px;
+    height: 42px; */
     display: flex;
     align-items: center;
     justify-content: center;

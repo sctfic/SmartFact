@@ -284,11 +284,13 @@
 
                 if (data.authenticated && data.user) {
                     // User is authenticated - show their avatar from settings or fallback to picture
-                    svgImage.href = data.user.picture || 'img/google_disconnected.png';
+                    svgImage.setAttribute('href', data.user.picture);
+                    svgImage.classList.remove('brightness');
                     userProfileBtn.title = `Cliquez pour vous déconnecter (${data.user.name})`;
                 } else {
                     // Not authenticated - show default icon
-                    svgImage.href = 'img/google_disconnected.png';
+                    svgImage.setAttribute('href', 'img/google_disconnected.png');
+                    svgImage.classList.add('brightness');
                     userProfileBtn.title = 'Cliquez pour vous connecter';
                 }
             } catch (error) {
