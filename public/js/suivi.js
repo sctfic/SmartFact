@@ -1,5 +1,130 @@
 // Suivi / Propals logic
 
+/**
+ * Génère un SVG de facture/invoice (30x40px, niveaux de gris)
+ * @param {number} itemCount - Nombre d'items/lignes
+ * @returns {string} SVG de la facture
+ */
+function generateInvoiceSVG(itemCount) {
+    // Limiter entre 1 et 10
+    itemCount = Math.max(1, Math.min(10, itemCount));
+
+    const width = 30;
+    const height = 40;
+
+    // Calcul des zones
+    const headerHeight = 3;
+    const clientInfoY = 4.5;
+    const clientInfoHeight = 5;
+    const tableY = 10;
+    const tableHeaderHeight = 2.2;
+    const footerHeight = 2.5;
+    const totalsHeight = 3.5;
+    const footerY = height - footerHeight;
+    const totalsY = footerY - totalsHeight;
+
+    // Hauteur disponible pour les items
+    const availableHeight = totalsY - tableY - tableHeaderHeight;
+    const itemSpacing = availableHeight / itemCount;
+
+    let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // Fond de la facture
+    svg += `
+        <rect width="${width}" height="${height}" fill="#ffffff" stroke="#000000" stroke-width="0.3"/>
+    `;
+
+    // Zone 1: En-tête
+    svg += `
+        <rect x="1" y="1" width="28" height="${headerHeight}" fill="#e0e0e0" stroke="#000" stroke-width="0.2"/>
+        <line x1="5" y1="1.8" x2="25" y2="1.8" stroke="#000" stroke-width="0.5"/>
+        <line x1="8" y1="2.5" x2="22" y2="2.5" stroke="#000" stroke-width="0.4"/>
+    `;
+
+    // Zone 2: Infos client (gauche)
+    svg += `
+        <rect x="1" y="${clientInfoY}" width="13" height="${clientInfoHeight}" fill="#f0f0f0" stroke="#000" stroke-width="0.2"/>
+        <line x1="3" y1="5.2" x2="11" y2="5.2" stroke="#000" stroke-width="0.4"/>
+        <line x1="3" y1="6" x2="9" y2="6" stroke="#000" stroke-width="0.4"/>
+    `;
+
+    // Zone 3: Infos entreprise (droite)
+    svg += `
+        <rect x="14.5" y="${clientInfoY}" width="14.5" height="${clientInfoHeight}" fill="#f0f0f0" stroke="#000" stroke-width="0.2"/>
+        <line x1="16" y1="5.2" x2="27" y2="5.2" stroke="#000" stroke-width="0.4"/>
+        <line x1="16" y1="6" x2="24" y2="6" stroke="#000" stroke-width="0.4"/>
+    `;
+
+    // Zone 4: Tableau
+    const tableHeight = totalsY - tableY;
+    svg += `
+        <rect x="1" y="${tableY}" width="28" height="${tableHeight}" fill="#fff" stroke="#000" stroke-width="0.2"/>
+    `;
+
+    // Colonne séparatrice prix/descriptif
+    svg += `
+        <line x1="22" y1="${tableY}" x2="22" y2="${totalsY}" stroke="#000" stroke-width="0.3"/>
+    `;
+
+    // En-tête du tableau
+    svg += `
+        <rect x="1" y="${tableY}" width="28" height="${tableHeaderHeight}" fill="#d0d0d0"/>
+        <line x1="22" y1="${tableY}" x2="22" y2="${tableY + tableHeaderHeight}" stroke="#000" stroke-width="0.3"/>
+    `;
+
+    // Générer les items selon itemCount
+    const startY = tableY + tableHeaderHeight;
+    const descriptifLengths = [19, 13, 8, 19, 16, 14, 11, 18, 10, 17, 12, 15]; // Longueurs variées
+    const prixLengths = [4, 3, 5, 2, 4, 3, 5, 4, 3, 4, 5, 3]; // Longueurs de prix variées
+
+    for (let i = 0; i < itemCount; i++) {
+        const itemY = startY + (i * itemSpacing) + 0.8;
+        const descriptifLength = descriptifLengths[i % descriptifLengths.length];
+        const prixLength = prixLengths[i % prixLengths.length];
+
+        // Ligne descriptif
+        svg += `
+            <line x1="2" y1="${itemY}" x2="${2 + descriptifLength}" y2="${itemY}" stroke="#000" stroke-width="0.5"/>
+        `;
+
+        // Ligne prix
+        svg += `
+            <line x1="23" y1="${itemY}" x2="${23 + prixLength}" y2="${itemY}" stroke="#000" stroke-width="0.5"/>
+        `;
+
+        // Séparation entre items (sauf après le dernier)
+        if (i < itemCount - 1) {
+            const separatorY = startY + ((i + 1) * itemSpacing);
+            svg += `
+                <line x1="1" y1="${separatorY}" x2="29" y2="${separatorY}" stroke="#000" stroke-width="0.15"/>
+            `;
+        }
+    }
+
+    // Zone 5: Totaux (bas-droite) avec symbole €
+    svg += `
+        <rect x="17" y="${totalsY}" width="12" height="${totalsHeight}" fill="#e8e8e8" stroke="#000" stroke-width="0.2"/>
+        <line x1="18" y1="${totalsY + 1}" x2="27" y2="${totalsY + 1}" stroke="#000" stroke-width="0.4"/>
+        <line x1="18" y1="${totalsY + 2}" x2="28" y2="${totalsY + 2}" stroke="#000" stroke-width="0.4"/>
+    `;
+
+    // Symbole € dans la zone totaux
+    svg += `
+        <text x="20" y="${totalsY + 2.8}" font-family="Arial" font-size="2" fill="#000" font-weight="bold">TOTAL €</text>
+    `;
+
+    // Zone 6: Pied de page
+    svg += `
+        <rect x="1" y="${footerY}" width="28" height="${footerHeight}" fill="#f0f0f0" stroke="#000" stroke-width="0.2"/>
+        <line x1="3" y1="${footerY + 0.7}" x2="27" y2="${footerY + 0.7}" stroke="#000" stroke-width="0.3"/>
+        <line x1="5" y1="${footerY + 1.5}" x2="25" y2="${footerY + 1.5}" stroke="#000" stroke-width="0.3"/>
+    `;
+
+    svg += `</svg>`;
+
+    return svg;
+}
+
 // Load suivi data
 async function loadSuiviData() {
     console.log('loadSuiviData');
@@ -100,15 +225,27 @@ function populateSuiviTable(data, tarifs = []) {
 
         const workflowId = `workflow-${item.id}`;
 
-        row.addEventListener('dblclick', function () { editPropalRow(this, item.id); });
+        // Compter le nombre d'items pour le SVG
+        let itemCount = 0;
+        if (itemsMap && Object.keys(itemsMap).length > 0) {
+            itemCount = Object.keys(itemsMap).length;
+        }
+        const detailsSVG = generateInvoiceSVG(itemCount);
+
+        row.addEventListener('dblclick', function (e) {
+            // Ne pas éditer si on clique sur id_tarifs (prioritaire)
+            if (!e.target.closest('td.id_tarifs')) {
+                editPropalRow(this, item.id);
+            }
+        });
 
         row.innerHTML = `
             <td class="id">${item.id}</td>
             <td class="devis_number">${item.devis_number || ''}</td>
+            <td class="id_client">${item.client_name || item.id_client || ''}</td>
+            <td class="id_tarifs" style="padding: 4px; cursor: pointer; text-align: center;" onclick="openTarifsModal(event)">${detailsSVG}</td>
             <td>${date}</td>
             <td>${displayDuree}</td>
-            <td class="id_client">${item.client_name || item.id_client || ''}</td>
-            <td class="id_tarifs">[...]</td>
             <td>${displayMontant} €</td>
             <td style="padding: 0; min-width: 290px;"><div id="${workflowId}" style="transform: scale(0.95); transform-origin: left center;"></div></td>
             <td>${item.mode_paiement || ''}</td>
@@ -235,18 +372,20 @@ function addPropalRow(preselectedClientId = null) {
     defaultDateVal.setDate(defaultDateVal.getDate() + 28);
     const formattedDefaultDate = defaultDateVal.toISOString().slice(0, 16);
 
+    const detailsSVG = generateInvoiceSVG(0);
+
     row.innerHTML = `
         <td style="display:none;"><input type="text" name="id" class="form-input" disabled></td>
         <td><input type="text" name="devis_number" class="form-input" placeholder="#" disabled></td>
-        <td><input type="datetime-local" name="date_heure" class="form-input" value="${formattedDefaultDate}" required></td>
-        <td><input type="text" name="duree" class="form-input" placeholder="HH:MM" disabled></td>
         <td>
             <select name="id_client" class="form-input" required onchange="updatePropalDefaults(this)">
                 <option value="">Sélectionner un client</option>
                 ${window.availableClients ? window.availableClients.map(c => `<option value="${c.id}" ${c.id == preselectedClientId ? 'selected' : ''}>${c.nom} ${c.prenom}</option>`).join('') : ''}
             </select>
         </td>
-        <td><button class="btn-icon" onclick="showPropalDetails(event)">📋</button></td>
+        <td style="padding: 4px; cursor: pointer; text-align: center;" onclick="openTarifsModal(event)">${detailsSVG}</td>
+        <td><input type="datetime-local" name="date_heure" class="form-input" value="${formattedDefaultDate}" required></td>
+        <td><input type="text" name="duree" class="form-input" placeholder="HH:MM" disabled></td>
         <td><input type="number" name="montant" class="form-input" step="0.01" placeholder="Montant" disabled></td>
         <td><input type="text" name="statut" class="form-input" value="draft" disabled></td>
         <td></td>
@@ -305,19 +444,26 @@ function editPropalRow(row, id) {
         window.currentPropalRow = row;
         window.currentPropalDetails = (data.id_tarifs.startsWith('{"') ? JSON.parse(data.id_tarifs) : data.id_tarifs) || {};
 
+        // Compter le nombre d'items pour le SVG
+        let itemCount = 0;
+        if (window.currentPropalDetails && Object.keys(window.currentPropalDetails).length > 0) {
+            itemCount = Object.keys(window.currentPropalDetails).length;
+        }
+        const detailsSVG = generateInvoiceSVG(itemCount);
+
         row.dataset.id = id;
         row.innerHTML = `
             <td class="id">${data.id}</td>
             <td class="devis_number">${data.devis_number || ''}</td>
-             <td><input type="datetime-local" name="date_heure" class="form-input" value="${data.date_heure}" required></td>
-            <td><input type="text" name="duree" class="form-input" value="${data.duree || ''}" disabled></td>
             <td>
                 <select name="id_client" class="form-input" required onchange="updatePropalDefaults(this)">
                     <option value="">Sélectionner un client</option>
                     ${window.availableClients ? window.availableClients.map(c => `<option value="${c.id}" ${c.id == data.id_client || c.nom === data.client_name ? 'selected' : ''}>${c.nom} ${c.prenom}</option>`).join('') : ''}
                 </select>
             </td>
-            <td><button class="btn-icon" onclick="showPropalDetails(event)">📋</button></td>
+            <td style="padding: 4px; cursor: pointer; text-align: center;" onclick="openTarifsModal(event)">${detailsSVG}</td>
+            <td><input type="datetime-local" name="date_heure" class="form-input" value="${data.date_heure}" required></td>
+            <td><input type="text" name="duree" class="form-input" value="${data.duree || ''}" disabled></td>
             <td><input type="number" name="montant" class="form-input" step="0.01" value="${data.montant || ''}" disabled></td>
             <td><input type="text" name="statut" class="form-input" value="${data.statut}" disabled></td>
             <td>${data.mode_paiement || ''}</td>
@@ -351,17 +497,90 @@ function updatePropalDefaults(selectElement) {
             window.currentPropalDetails = {};
             window.currentPropalDetails[defaultTarif.id] = {
                 qtt: parseFloat(client.distance) || 1,
-                detail: ""
+                detail: client.Comment
             };
             updatePropalCalculations(row);
         }
     }
 }
 
+function openTarifsModal(event) {
+    console.log('openTarifsModal', event);
+    
+    // Récupérer la row à partir du click
+    let row = window.currentPropalRow;
+    if (event && !row) {
+        row = event.target.closest('tr');
+    }
+    
+    if (!row) {
+        console.error('Row not found');
+        return;
+    }
+
+    window.currentPropalRow = row;
+
+    // Récupérer l'ID de la propal depuis la row
+    const itemId = row.querySelector('td.id')?.textContent;
+    console.log('itemId:', itemId);
+    
+    // Vérifier si la row est en édition (a des inputs)
+    const hasInputs = row.querySelector('input[name="duree"]') !== null;
+    console.log('hasInputs:', hasInputs);
+    
+    if (!hasInputs && itemId) {
+        // La row n'est pas en édition, il faut passer en mode édition
+        console.log('Basculage en mode édition avant ouverture de la modale');
+        editPropalRow(row, itemId);
+        // editPropalRow va mettre les inputs dans la row, puis on ouvre la modale
+        // On rappelle openTarifsModal après un petit délai
+        setTimeout(() => {
+            showPropalDetails({ 
+                preventDefault: () => { },
+                target: { closest: () => window.currentPropalRow }
+            });
+        }, 50);
+        return;
+    }
+    
+    if (itemId) {
+        // Trouver la propal dans les données
+        const propal = window.propalData?.find(p => p.id === itemId);
+        if (propal) {
+            // Parser id_tarifs
+            window.currentPropalDetails = (propal.id_tarifs.startsWith('{"') ? JSON.parse(propal.id_tarifs) : propal.id_tarifs) || {};
+        }
+    }
+
+    // Afficher la modale
+    const event2 = {
+        preventDefault: () => { },
+        target: {
+            closest: () => window.currentPropalRow
+        }
+    };
+
+    showPropalDetails(event2);
+}
+
 function showPropalDetails(event) {
+    console.log('showPropalDetails');
     event.preventDefault();
     const row = event.target.closest('tr');
     window.currentPropalRow = row;
+
+    console.log('id_tarifs avant cleanup:', window.currentPropalDetails);
+
+    // Nettoyer les tarifs qui n'existent plus
+    Object.keys(window.currentPropalDetails).forEach(tarifId => {
+        const tarif = window.availableTarifs.find(t => t.id === tarifId);
+        if (!tarif) {
+            console.log(`Suppression du tarif ${tarifId} qui n'existe plus`);
+            delete window.currentPropalDetails[tarifId];
+        }
+    });
+
+    console.log('id_tarifs après cleanup:', window.currentPropalDetails);
 
     // Show modal for tarif selection
     const modal = document.getElementById('invoiceItemsModal');
@@ -370,50 +589,111 @@ function showPropalDetails(event) {
         return;
     }
 
-    // Populate modal with available tarifs and current selections
-    let html = '<div class="modal-content"><h3>Détails de la Propal</h3>';
-    html += '<table style="width:100%"><thead><tr><th>Tarif</th><th>Qté</th><th>P.U.</th><th>Total</th></tr></thead><tbody>';
+    // Récupérer le tbody existant de la modale
+    const tbody = modal.querySelector('tbody');
+    if (!tbody) {
+        alert("Table body not found in modal");
+        return;
+    }
 
-    window.availableTarifs.forEach(tarif => {
-        const qtt = window.currentPropalDetails[tarif.id]?.qtt || 0;
+    // Vider et remplir le tbody avec SEULEMENT les tarifs sélectionnés
+    tbody.innerHTML = '';
+    Object.entries(window.currentPropalDetails).forEach(([tarifId, details]) => {
+        const tarif = window.availableTarifs.find(t => t.id === tarifId);
+        if (!tarif) return;
+
+        const qtt = details.qtt || 0;
+        const detail = details.detail || '';
         const prix = parseFloat(tarif.prix) || 0;
         const total = (qtt * prix).toFixed(2);
-        html += `
-            <tr>
-                <td>${tarif.libelle}</td>
-                <td><input type="number" class="tarif-qtt" data-tarif-id="${tarif.id}" value="${qtt}" min="0" step="0.01" onchange="updatePropalDetails(this)"></td>
-                <td>${prix.toFixed(2)}</td>
-                <td>${total}</td>
-            </tr>
+
+        const row = document.createElement('tr');
+        console.log(tarif);
+        row.innerHTML = `
+            <td><span style="font-weight: bold;">${tarif.libelle}</span></td>
+            <td><input type="text" class="tarif-detail" data-tarif-id="${tarif.id}" value="${detail}" placeholder="Détail" onchange="updatePropalDetails(this)"></td>
+            <td><input type="number" class="tarif-qtt" data-tarif-id="${tarif.id}" value="${qtt}" min="0" step="1" onchange="updatePropalDetails(this)"></td>
+            <td>${tarif.Unit || ''}</td>
+            <td>${prix.toFixed(2)} €</td>
+            <td><button class="btn-icon" onclick="removePropalTarif('${tarifId}')">✕</button></td>
         `;
+        tbody.appendChild(row);
     });
 
-    html += '</tbody></table>';
-    html += '<div class="modal-actions" style="margin-top:15px;">';
-    html += '<button class="btn btn-success" onclick="closeInvoiceItemsModal(); updatePropalCalculations(window.currentPropalRow)">Valider</button>';
-    html += '<button class="btn btn-secondary" onclick="closeInvoiceItemsModal()">Annuler</button>';
-    html += '</div></div>';
-
-    modal.innerHTML = html;
     modal.classList.remove('hidden');
+
+    // Setup autocomplete for tarif search if not already set
+    if (!modal.dataset.autocompleteSetup) {
+        const searchInput = modal.querySelector('#tarifSearch');
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            const suggestions = modal.querySelector('#tarifSuggestions');
+
+            if (query.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+
+            const filtered = window.availableTarifs.filter(t =>
+                t.libelle.toLowerCase().includes(query) &&
+                !window.currentPropalDetails[t.id]
+            );
+
+            if (filtered.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+
+            suggestions.innerHTML = filtered.map(t =>
+                `<div style="padding:8px; border-bottom:1px solid #eee; cursor:pointer;" onclick="selectTarifFromSuggestion('${t.id}', '${t.libelle.replace(/'/g, "\\'")}', '${t.Comment?.replace(/'/g, "\\'") || ''}')">${t.libelle}</div>`
+            ).join('');
+            suggestions.style.display = 'block';
+        });
+        modal.dataset.autocompleteSetup = 'true';
+    }
 }
 
 function updatePropalDetails(input) {
     const tarifId = input.dataset.tarifId;
-    const qtt = parseFloat(input.value) || 0;
 
-    if (qtt > 0) {
-        window.currentPropalDetails[tarifId] = {
-            qtt: qtt,
-            detail: ""
-        };
-    } else {
-        delete window.currentPropalDetails[tarifId];
+    if (input.classList.contains('tarif-qtt')) {
+        // Mise à jour de la quantité
+        const qtt = parseFloat(input.value) || 0;
+
+        if (qtt > 0) {
+            if (!window.currentPropalDetails[tarifId]) {
+                // Si le tarif n'existe pas encore, créer une entrée avec le comment du tarif
+                const tarif = window.availableTarifs.find(t => t.id === tarifId);
+                window.currentPropalDetails[tarifId] = {
+                    qtt: qtt,
+                    detail: tarif?.Comment || ""
+                };
+            } else {
+                window.currentPropalDetails[tarifId].qtt = qtt;
+            }
+        } else {
+            delete window.currentPropalDetails[tarifId];
+        }
+    } else if (input.classList.contains('tarif-detail')) {
+        // Mise à jour du détail
+        const detail = input.value;
+        if (window.currentPropalDetails[tarifId]) {
+            window.currentPropalDetails[tarifId].detail = detail;
+        }
     }
 }
 
 function updatePropalCalculations(row) {
     if (!row) return;
+
+    // Nettoyer les tarifs qui n'existent plus
+    Object.keys(window.currentPropalDetails).forEach(tarifId => {
+        const tarif = window.availableTarifs.find(t => t.id === tarifId);
+        if (!tarif) {
+            console.log(`Suppression du tarif ${tarifId} qui n'existe plus lors du calcul`);
+            delete window.currentPropalDetails[tarifId];
+        }
+    });
 
     let totalDuree = 0;
     let totalMontant = 0;
@@ -440,9 +720,23 @@ function updatePropalCalculations(row) {
     const dureeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 
     // Update fields
-    row.querySelector('input[name="duree"]').value = dureeStr;
-    row.querySelector('input[name="montant"]').value = totalMontant.toFixed(2);
+    console.log('updatePropalCalculations - row:', row);
+    console.log('updatePropalCalculations - row.tagName:', row?.tagName);
+    console.log('updatePropalCalculations - row.innerHTML:', row?.innerHTML);
+    
+    const dureeInput = row.querySelector('input[name="duree"]');
+    const montantInput = row.querySelector('input[name="montant"]');
+    
+    console.log('dureeInput:', dureeInput);
+    console.log('montantInput:', montantInput);
+    
+    if (dureeInput) dureeInput.value = dureeStr;
+    if (montantInput) montantInput.value = totalMontant.toFixed(2);
+    
     row.dataset.tarifDetails = JSON.stringify(idTarifs);
+
+    // Enregistrer automatiquement via l'API
+    savePropalRow(row);
 }
 
 async function savePropalRow(row) {
@@ -538,3 +832,50 @@ window.applyPropalFilters = () => {
 
     populateSuiviTable(filtered, window.availableTarifs);
 };
+
+function addPropalTarifItem() {
+    const modal = document.getElementById('invoiceItemsModal');
+    const searchInput = modal.querySelector('#tarifSearch');
+    const query = searchInput.value.toLowerCase();
+
+    // Trouver le tarif correspondant à la recherche
+    const tarif = window.availableTarifs.find(t =>
+        t.libelle.toLowerCase().includes(query) &&
+        !window.currentPropalDetails[t.id]
+    );
+
+    if (!tarif) {
+        alert("Tarif non trouvé ou déjà sélectionné");
+        return;
+    }
+
+    selectTarifFromSuggestion(tarif.id, tarif.libelle, tarif.Comment || '');
+}
+
+function selectTarifFromSuggestion(tarifId, tarifLibelle, tarifComment) {
+    // Ajouter le tarif à currentPropalDetails avec qtt = 1 et detail = comment
+    if (!window.currentPropalDetails[tarifId]) {
+        window.currentPropalDetails[tarifId] = {
+            qtt: 1,
+            detail: tarifComment
+        };
+    }
+
+    // Vider le search input
+    const modal = document.getElementById('invoiceItemsModal');
+    const searchInput = modal.querySelector('#tarifSearch');
+    searchInput.value = '';
+    const suggestions = modal.querySelector('#tarifSuggestions');
+    suggestions.style.display = 'none';
+    suggestions.innerHTML = '';
+
+    // Rafraîchir la modale
+    showPropalDetails({ preventDefault: () => { }, target: { closest: () => window.currentPropalRow } });
+}
+
+function removePropalTarif(tarifId) {
+    delete window.currentPropalDetails[tarifId];
+
+    // Rafraîchir la modale
+    showPropalDetails({ preventDefault: () => { }, target: { closest: () => window.currentPropalRow } });
+}

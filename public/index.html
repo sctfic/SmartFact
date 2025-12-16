@@ -146,6 +146,7 @@
                 const info = await response.json();
                 document.getElementById('name').textContent = info.name;
                 document.getElementById('version').textContent = info.version;
+                document.getElementById('author').textContent = info.author;
             } catch (error) {
                 console.error('Error loading app info:', error);
             }
@@ -528,7 +529,7 @@
 
                 const tarifs = await tarifsRes.json();
                 const suivi = await suiviRes.json();
-
+                console.log(suivi.id_tarifs);
                 // Stocker les tarifs globalement pour l'usage dans addInvoiceItem
                 window.availableTarifs = tarifs;
 
@@ -1065,19 +1066,6 @@
                                         oninput="handleColumnFilter('propals', 'devis_number', this)">
                                 </div>
                             </th>
-                            <th class="date_heure sortable" data-col="date_heure"
-                                onclick="handleSort('propals', 'date_heure')">
-                                <div class="th-flex">
-                                    <span>Intervention</span>
-                                    <span class="sort-icon"></span>
-                                </div>
-                            </th>
-                            <th class="duree sortable" data-col="duree" onclick="handleSort('propals', 'duree')">
-                                <div class="th-flex">
-                                    <span>Duree</span>
-                                    <span class="sort-icon"></span>
-                                </div>
-                            </th>
                             <th class="id_client sortable" data-col="client" onclick="handleSort('propals', 'client')">
                                 <div class="th-flex">
                                     <span>Client</span>
@@ -1093,6 +1081,19 @@
                                 </div>
                             </th>
                             <th class="id_tarifs">Détails</th>
+                            <th class="date_heure sortable" data-col="date_heure"
+                                onclick="handleSort('propals', 'date_heure')">
+                                <div class="th-flex">
+                                    <span>Intervention</span>
+                                    <span class="sort-icon"></span>
+                                </div>
+                            </th>
+                            <th class="duree sortable" data-col="duree" onclick="handleSort('propals', 'duree')">
+                                <div class="th-flex">
+                                    <span>Duree</span>
+                                    <span class="sort-icon"></span>
+                                </div>
+                            </th>
                             <th class="montant sortable" data-col="montant" onclick="handleSort('propals', 'montant')">
                                 <div class="th-flex">
                                     <span>Montant</span>
@@ -1662,17 +1663,24 @@
     <div id="invoiceItemsModal" class="modal hidden">
         <div class="modal-content large">
             <div class="modal-header">
-                <b id="invoiceItemsModalTitle">Édition des Lignes de la Facture</b>
+                <b id="invoiceItemsModalTitle">Items</b>
             </div>
             <div class="modal-body">
+                <div style="margin-bottom: 15px; position: relative;">
+                    <input type="text" id="tarifSearch" placeholder="Chercher un tarif..."
+                        style="width:200px; padding:5px; margin-right:5px;">
+                    <div id="tarifSuggestions" style="width: 200px;"></div>
+                </div>
                 <div class="table-container">
                     <table id="invoiceItemsTable">
                         <thead>
                             <tr>
+                                <th style="width:25%">Libellé</th>
+                                <th style="width:35%">Détail</th>
                                 <th style="width:8%">Qtt</th>
-                                <th style="width:60%">Détail</th>
-                                <th style="width:20%">Prix Unitaire</th>
-                                <th style="width:15%">Actions</th>
+                                <th style="width:8%">Unit</th>
+                                <th style="width:12%">Prix</th>
+                                <th style="width:4%">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1680,13 +1688,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="margin-top: 1rem;">
-                    <button class="btn btn-sm btn-primary" onclick="addInvoiceItem()">Ajouter une ligne</button>
+                <div class="modal-actions" style="margin-top:15px;">
+                    <button class="btn btn-success"
+                        onclick="closeInvoiceItemsModal(); updatePropalCalculations(window.currentPropalRow)">Valider</button>
+                    <button class="btn btn-secondary" onclick="closeInvoiceItemsModal()">Annuler</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button id="saveItemsBtn" class="btn btn-success" onclick="saveInvoiceItems()">Enregistrer les
-                    modifications</button>
             </div>
         </div>
     </div>

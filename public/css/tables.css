@@ -33,6 +33,10 @@ th {
     font-size: 0.97em;
 }
 
+tr {
+    transition: background-color 1s cubic-bezier(0.18, 0.89, 0.32, 1.28)
+}
+
 tr:hover {
     background-color: lightcyan;
 }

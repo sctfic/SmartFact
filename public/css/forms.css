@@ -143,3 +143,24 @@ td > input.form-input-sm {
 #availabilityList li:last-child {
     border-bottom: none;
 }
+
+/* Champ quantité dans les modales de tarifs */
+.tarif-qtt {
+    width: 60px !important;
+    padding: 0.1rem 0.1rem !important;
+}
+
+.tarif-detail {
+    width: 100%;
+}
+
+#tarifSuggestions {
+    position: absolute;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    display: none;
+    margin-top: 5px;
+    background: white;
+    z-index: 1000;
+}

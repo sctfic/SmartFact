@@ -67,6 +67,11 @@ const createSuivi = async (req, res) => {
             dateCreation: new Date().toISOString()
         };
 
+        // Stringify id_tarifs si c'est un objet
+        if (newSuivi.id_tarifs && typeof newSuivi.id_tarifs === 'object') {
+            newSuivi.id_tarifs = JSON.stringify(newSuivi.id_tarifs);
+        }
+
         suivis.push(newSuivi);
         writeTSV(filePath, suivis);
 
@@ -92,6 +97,11 @@ const updateSuivi = async (req, res) => {
             ...suivis[suiviIndex],
             ...req.body
         };
+
+        // Stringify id_tarifs si c'est un objet
+        if (updatedSuivi.id_tarifs && typeof updatedSuivi.id_tarifs === 'object') {
+            updatedSuivi.id_tarifs = JSON.stringify(updatedSuivi.id_tarifs);
+        }
 
         suivis[suiviIndex] = updatedSuivi;
         writeTSV(filePath, suivis);
