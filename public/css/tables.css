@@ -17,7 +17,7 @@ table {
 th,
 td {
     padding: 0.3rem 0.4rem;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #ddd;
     white-space: nowrap;
 }
@@ -34,7 +34,7 @@ th {
 }
 
 tr:hover {
-    background-color: #f8f9fa;
+    background-color: lightcyan;
 }
 
 td.actions-cell,
