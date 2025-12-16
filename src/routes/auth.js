@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
+const { getSettingsPath } = require('../utils');
 
 const router = Router();
 
@@ -144,10 +145,33 @@ router.get('/google/callback', async (req, res) => {
 // Get current user info
 router.get('/user', (req, res) => {
     if (req.session.user) {
-        res.json({
-            authenticated: true,
-            user: req.session.user
-        });
+        // Load settings to get profilePictureUrl
+        try {
+            const settingsPath = getSettingsPath(req.username);
+            let profilePictureUrl = req.session.user.picture || 'img/google_disconnected.png';
+            
+            if (fs.existsSync(settingsPath)) {
+                const settingsContent = fs.readFileSync(settingsPath, 'utf-8');
+                const settings = JSON.parse(settingsContent);
+                if (settings.googleOAuth?.profilePictureUrl) {
+                    profilePictureUrl = settings.googleOAuth.profilePictureUrl;
+                }
+            }
+            
+            res.json({
+                authenticated: true,
+                user: {
+                    ...req.session.user,
+                    picture: profilePictureUrl
+                }
+            });
+        } catch (error) {
+            console.error('Error loading profile picture from settings:', error);
+            res.json({
+                authenticated: true,
+                user: req.session.user
+            });
+        }
     } else {
         res.json({
             authenticated: false
